@@ -1,7 +1,11 @@
 using Microsoft.OpenApi.Models;
+using plataforma.ofertas.Interfaces.Agendamentos;
+using plataforma.ofertas.Interfaces.Jobs;
 using plataforma.ofertas.Interfaces.Ofertas;
 using plataforma.ofertas.Interfaces.Scrapers;
 using plataforma.ofertas.Repositories;
+using plataforma.ofertas.Services.Agendamentos;
+using plataforma.ofertas.Services.Jobs;
 using plataforma.ofertas.Services.Ofertas;
 using plataforma.ofertas.Services.Scrapers;
 using plataforma.ofertas.Storage;
@@ -19,7 +23,16 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+    {
+        options.ReturnHttpNotAcceptable = false;
+    })
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -62,13 +75,27 @@ builder.Services.AddSwaggerGen(c =>
     c.CustomSchemaIds(x => x.FullName);
 });
 
+builder.Services.Configure<List<CronJobConfig>>(builder.Configuration.GetSection("CronJobs"));
+
 builder.Services.AddSingleton<SupabaseContext>();
 builder.Services.AddScoped<IOfertaRepository, OfertaRepository>();
-builder.Services.AddScoped<IConsultaOfertasRecentesService, ConsultaOfertasRecentesService>();
 
-// builder.Services.AddHttpClient<IAmazonScraperService, AmazonScraperService>();
-// builder.Services.AddHttpClient<IShopeeScraperService, ShopeeScraperService>();
-// builder.Services.AddHttpClient<IMercadoLivreScraperService, MercadoLivreScraperService>();
+builder.Services.AddScoped<IRunnableService, AtualizarOfertasJob>();
+
+builder.Services.AddSingleton<IJobRegistry, JobRegistry>();
+builder.Services.AddHostedService<CronWorker>();
+
+builder.Services.AddScoped<IConsultaOfertasDoBancoService, ConsultaOfertasDoBancoService>();
+
+builder.Services.AddScoped<IOfertaAgendadaRepository, OfertaAgendadaRepository>();
+
+builder.Services.AddScoped<IAgendarOfertaService, AgendarOfertaService>();
+builder.Services.AddScoped<IListarOfertasAgendadasService, ListarOfertasAgendadasService>();
+builder.Services.AddScoped<IObterOfertaAgendadaDetalheService, ObterOfertaAgendadaDetalheService>();
+builder.Services.AddScoped<IAtualizarHorarioAgendamentoService, AtualizarHorarioAgendamentoService>();
+builder.Services.AddScoped<IAtualizarEnvioAgendamentoService, AtualizarEnvioAgendamentoService>();
+builder.Services.AddScoped<IConsultaOfertaDetalheService, ConsultaOfertaDetalheService>();
+
 builder.Services.AddScoped<IAmazonScraperService, AmazonScraperService>();
 builder.Services.AddScoped<IShopeeScraperService, ShopeeScraperService>();
 builder.Services.AddScoped<IMercadoLivreScraperService, MercadoLivreScraperService>();
@@ -91,7 +118,6 @@ if (app.Environment.IsProduction())
     app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ofertas API"); });
 }
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 

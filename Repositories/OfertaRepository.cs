@@ -34,6 +34,16 @@ public class OfertaRepository(SupabaseContext context) : IOfertaRepository
         return response.Models;
     }
 
+    public async Task<Oferta> ObterPorIdAsync(Guid id, CancellationToken ct)
+    {
+        var response = await _client
+            .From<Oferta>()
+            .Filter("id", Constants.Operator.Equals, id.ToString())
+            .Get(cancellationToken: ct);
+
+        return response.Models.FirstOrDefault();
+    }
+
     public async Task RemoverAsync(Guid id, CancellationToken ct)
     {
         await _client

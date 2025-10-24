@@ -1,0 +1,69 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using plataforma.ofertas._Base;
+using plataforma.ofertas.Dto.Agendamentos;
+using plataforma.ofertas.Dto.Constantes;
+using plataforma.ofertas.Dto.Ofertas;
+using plataforma.ofertas.Interfaces.Agendamentos;
+
+namespace plataforma.ofertas.Controllers;
+
+[ApiController]
+[Route("api/ofertas/agendadas")]
+public class OfertasAgendadasController : ControllerBase
+{
+    [HttpPost("agendar")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(OfertaAgendadaDetalheDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AgendarOferta(
+        [FromBody] AgendarOfertaRequestDto request,
+        [FromServices] IAgendarOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.AgendarAsync(request, ct).ToResponseResultAsync();
+    }
+
+    [HttpGet]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(List<OfertaAgendadaResumoDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListarAgendadas(
+        [FromServices] IListarOfertasAgendadasService service,
+        CancellationToken ct)
+    {
+        return await service.ListarAsync(ct).ToResponseResultAsync();
+    }
+
+    [HttpGet("{id:guid}")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(OfertaAgendadaDetalheDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ObterDetalhe(
+        [FromRoute] Guid id,
+        [FromServices] IObterOfertaAgendadaDetalheService service,
+        CancellationToken ct)
+    {
+        return await service.ObterAsync(id, ct).ToResponseResultAsync();
+    }
+
+    [HttpPut("{id:guid}/horario")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(OfertaAgendadaDetalheDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AtualizarHorario(
+        [FromRoute] Guid id,
+        [FromBody] AtualizarHorarioDto dto,
+        [FromServices] IAtualizarHorarioAgendamentoService service,
+        CancellationToken ct)
+    {
+        return await service.AtualizarAsync(id, dto.NovaDataHoraEnvio, ct).ToResponseResultAsync();
+    }
+
+    [HttpPut("{id:guid}")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(OfertaAgendadaDetalheDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AtualizarEnvio(
+        [FromRoute] Guid id,
+        [FromBody] AtualizarEnvioDto dto,
+        [FromServices] IAtualizarEnvioAgendamentoService service,
+        CancellationToken ct)
+    {
+        return await service.AtualizarAsync(id, dto, ct).ToResponseResultAsync();
+    }
+}
