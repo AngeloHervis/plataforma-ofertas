@@ -17,10 +17,9 @@ public class ObterOfertaAgendadaDetalheService(IOfertaAgendadaRepository repo) :
         {
             Id = entidade.Id,
             Titulo = entidade.Titulo,
-            Preco = entidade.Preco,
+            PrecoAtual = entidade.PrecoAtual,
             Link = entidade.Link,
             ImagemUrl = entidade.ImagemUrl,
-            Descricao = entidade.Descricao,
             DataHoraEnvio = entidade.DataHoraEnvio,
             Enviada = entidade.Enviada,
             CriadoEm = entidade.CriadoEm,

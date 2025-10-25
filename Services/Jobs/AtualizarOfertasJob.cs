@@ -15,17 +15,18 @@ public class AtualizarOfertasJob(
 
     public async Task RunAsync(CancellationToken ct)
     {
-        return;
-        
         var resultados = await Task.WhenAll(
             pelando.ScrapePelandoAsync(ct),
             promobit.ScrapePromobitAsync(ct),
-            meli.ObterInformacoesCompletasMercadoLivreAsync(ct)
+            meli.ObterInformacoesCompletasListaMercadoLivreAsync(ct)
         );
+
+        var linksExistentes = await repo.ObterLinksExistentesAsync(ct);
 
         var ofertasValidas = resultados
             .Where(r => !r.IsError && r.Data is not null)
             .SelectMany(r => r.Data!)
+            .Where(o => !linksExistentes.Contains(o.Link))
             .DistinctBy(o => new { o.Titulo, o.Link })
             .ToList();
 

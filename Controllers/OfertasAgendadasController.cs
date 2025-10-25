@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using plataforma.ofertas._Base;
-using plataforma.ofertas.Dto.Agendamentos;
 using plataforma.ofertas.Dto.Constantes;
 using plataforma.ofertas.Dto.Ofertas;
 using plataforma.ofertas.Interfaces.Agendamentos;
@@ -41,29 +40,5 @@ public class OfertasAgendadasController : ControllerBase
         CancellationToken ct)
     {
         return await service.ObterAsync(id, ct).ToResponseResultAsync();
-    }
-
-    [HttpPut("{id:guid}/horario")]
-    [Produces(TiposRequisicaoERetorno.JsonText)]
-    [ProducesResponseType(typeof(OfertaAgendadaDetalheDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> AtualizarHorario(
-        [FromRoute] Guid id,
-        [FromBody] AtualizarHorarioDto dto,
-        [FromServices] IAtualizarHorarioAgendamentoService service,
-        CancellationToken ct)
-    {
-        return await service.AtualizarAsync(id, dto.NovaDataHoraEnvio, ct).ToResponseResultAsync();
-    }
-
-    [HttpPut("{id:guid}")]
-    [Produces(TiposRequisicaoERetorno.JsonText)]
-    [ProducesResponseType(typeof(OfertaAgendadaDetalheDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> AtualizarEnvio(
-        [FromRoute] Guid id,
-        [FromBody] AtualizarEnvioDto dto,
-        [FromServices] IAtualizarEnvioAgendamentoService service,
-        CancellationToken ct)
-    {
-        return await service.AtualizarAsync(id, dto, ct).ToResponseResultAsync();
     }
 }

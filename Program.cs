@@ -1,4 +1,7 @@
+using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using plataforma.ofertas.Dto.Agendamentos;
 using plataforma.ofertas.Interfaces.Agendamentos;
 using plataforma.ofertas.Interfaces.Jobs;
 using plataforma.ofertas.Interfaces.Ofertas;
@@ -23,10 +26,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers(options =>
-    {
-        options.ReturnHttpNotAcceptable = false;
-    })
+builder.Services.AddControllers(options => { options.ReturnHttpNotAcceptable = false; })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
@@ -92,9 +92,18 @@ builder.Services.AddScoped<IOfertaAgendadaRepository, OfertaAgendadaRepository>(
 builder.Services.AddScoped<IAgendarOfertaService, AgendarOfertaService>();
 builder.Services.AddScoped<IListarOfertasAgendadasService, ListarOfertasAgendadasService>();
 builder.Services.AddScoped<IObterOfertaAgendadaDetalheService, ObterOfertaAgendadaDetalheService>();
-builder.Services.AddScoped<IAtualizarHorarioAgendamentoService, AtualizarHorarioAgendamentoService>();
-builder.Services.AddScoped<IAtualizarEnvioAgendamentoService, AtualizarEnvioAgendamentoService>();
 builder.Services.AddScoped<IConsultaOfertaDetalheService, ConsultaOfertaDetalheService>();
+builder.Services.AddScoped<IGerarLinkAfiliadoService, GerarLinkAfiliadoService>();
+builder.Services.AddScoped<IAgendarEnvioWhatsappService, AgendarEnvioWhatsappService>();
+
+
+builder.Services.AddHttpClient<ISendFlowActionsClient, SendFlowActionsClient>((sp, http) =>
+    {
+        var opts = sp.GetRequiredService<IOptions<SendFlowOptions>>().Value;
+        http.BaseAddress = new Uri(opts.BaseUrl.TrimEnd('/') + "/");
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", opts.ApiKey);
+    })
+    .SetHandlerLifetime(TimeSpan.FromMinutes(10));
 
 builder.Services.AddScoped<IAmazonScraperService, AmazonScraperService>();
 builder.Services.AddScoped<IShopeeScraperService, ShopeeScraperService>();

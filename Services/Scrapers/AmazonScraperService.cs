@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using System.Globalization;
 using HtmlAgilityPack;
-using plataforma.ofertas._Base;
 using plataforma.ofertas.Interfaces.Scrapers;
 using plataforma.ofertas.Models;
 
@@ -8,7 +8,8 @@ namespace plataforma.ofertas.Services.Scrapers;
 
 public class AmazonScraperService(HttpClient httpClient) : IAmazonScraperService
 {
-    public async Task<ProductInfo> ObterInformacoesCompletasDaAmazonAsync(string linkDeal, string fonte, CancellationToken ct)
+    public async Task<ProductInfo> ObterInformacoesCompletasDaAmazonAsync(string linkDeal, string fonte,
+        CancellationToken ct)
     {
         try
         {
@@ -18,27 +19,70 @@ public class AmazonScraperService(HttpClient httpClient) : IAmazonScraperService
                 return new ProductInfo();
 
             var request = new HttpRequestMessage(HttpMethod.Get, linkAmazon);
-            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            request.Headers.Add("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
             var response = await httpClient.SendAsync(request, ct);
             response.EnsureSuccessStatusCode();
 
             var htmlAmazon = await response.Content.ReadAsStringAsync(ct);
             var doc = new HtmlDocument();
             doc.LoadHtml(htmlAmazon);
+            var precoAnterior = ExtrairPrecoAnteriorDaAmazon(doc);
+            var precoAtual = ExtrairPrecoDaAmazon(doc);
+
+            var precoAnteriorValido = ValidarPrecoAnteriorValido(precoAnterior, precoAtual);
+            if (!precoAnteriorValido) precoAnterior = null;
 
             return new ProductInfo
             {
                 Titulo = ExtrairTituloDaAmazon(doc),
                 Link = linkAmazon,
                 ImagemUrl = ExtrairImagemDaAmazon(doc),
-                PrecoAtual = ExtrairPrecoDaAmazon(doc),
-                PrecoAnterior = ExtrairPrecoAnteriorDaAmazon(doc)
+                PrecoAtual = precoAtual,
+                PrecoAnterior = precoAnterior
             };
         }
         catch
         {
             return new ProductInfo();
         }
+    }
+
+    private bool ValidarPrecoAnteriorValido(string precoAnterior, string precoAtual)
+    {
+        if (string.IsNullOrWhiteSpace(precoAnterior) || string.IsNullOrWhiteSpace(precoAtual))
+            return false;
+
+        var valorAnterior = ExtrairValorNumerico(precoAnterior);
+        var valorAtual = ExtrairValorNumerico(precoAtual);
+
+        if (!valorAnterior.HasValue || !valorAtual.HasValue)
+            return false;
+
+        return valorAnterior > valorAtual;
+    }
+
+    private static decimal? ExtrairValorNumerico(string preco)
+    {
+        if (string.IsNullOrWhiteSpace(preco)) return null;
+
+        var precoLimpo = preco.Replace("R$", "").Replace(" ", "").Trim();
+
+        if (precoLimpo.Contains(','))
+        {
+            var partes = precoLimpo.Split(',');
+            if (partes.Length == 2 && partes[1].Length == 2)
+            {
+                var parteInteira = partes[0].Replace(".", "");
+                var centavos = partes[1];
+
+                if (decimal.TryParse($"{parteInteira}.{centavos}", NumberStyles.Float, CultureInfo.InvariantCulture,
+                        out var valor))
+                    return valor;
+            }
+        }
+
+        return null;
     }
 
     private static string AplicarTagAfiliado(string url, string fonte)
@@ -191,15 +235,37 @@ public class AmazonScraperService(HttpClient httpClient) : IAmazonScraperService
             .Replace("R$", "")
             .Replace("&nbsp;", "")
             .Replace(" ", "")
-            .Replace(".", "")
-            .Replace(",", ".")
             .Trim();
 
-        // Remove qualquer caractere não numérico
-        precoLimpo = Regex.Replace(precoLimpo, @"[^\d\.]", "");
-        
-        if (!string.IsNullOrWhiteSpace(precoLimpo))
-            return precoLimpo;
+        if (precoLimpo.Contains(','))
+        {
+            var partes = precoLimpo.Split(',');
+            if (partes.Length == 2 && partes[1].Length == 2)
+            {
+                var parteInteira = partes[0];
+                var centavos = partes[1];
+
+                // Remove pontos da parte inteira (separadores de milhares)
+                parteInteira = parteInteira.Replace(".", "");
+
+                // Reconstrói o valor no formato correto
+                if (decimal.TryParse($"{parteInteira}.{centavos}", System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out var valor))
+                {
+                    return valor.ToString("C", new CultureInfo("pt-BR"));
+                }
+            }
+        }
+
+        // Formato sem vírgula: tenta interpretar como centavos
+        if (!precoLimpo.Contains(',') && !precoLimpo.Contains('.'))
+        {
+            if (decimal.TryParse(precoLimpo, out var valorCentavos))
+            {
+                var valorReal = valorCentavos / 100;
+                return valorReal.ToString("C", new CultureInfo("pt-BR"));
+            }
+        }
 
         return null;
     }

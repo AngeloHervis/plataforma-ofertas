@@ -17,7 +17,7 @@ public class ListarOfertasAgendadasService(IOfertaAgendadaRepository repo) : ILi
             {
                 Id = i.Id,
                 Titulo = i.Titulo,
-                Preco = i.Preco,
+                Preco = i.PrecoAtual,
                 ImagemUrl = i.ImagemUrl,
                 DataHoraAgendamento = i.DataHoraEnvio,
                 Enviada = i.Enviada

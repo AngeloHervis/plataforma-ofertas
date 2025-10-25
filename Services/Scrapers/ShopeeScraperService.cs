@@ -1,7 +1,9 @@
 ﻿using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
-using plataforma.ofertas._Base;
 using plataforma.ofertas.Interfaces.Scrapers;
 using plataforma.ofertas.Models;
 
@@ -9,18 +11,13 @@ namespace plataforma.ofertas.Services.Scrapers;
 
 public class ShopeeScraperService(HttpClient httpClient) : IShopeeScraperService
 {
-    private const string SeletorBotaoLoja = "//a[contains(@class,'store-link-button')]";
-    private static readonly Regex RegexLimpezaPreco = new(@"[^\d,\.]", RegexOptions.Compiled);
-
     public async Task<ProductInfo> ObterInformacoesCompletasDaShopeeAsync(string linkDeal, CancellationToken ct)
     {
         try
         {
-            var linkShopee = await ObterLinkRealDaShopeeAsync(linkDeal, ct);
-            if (string.IsNullOrEmpty(linkShopee))
-                return new ProductInfo();
+            var linkAfiliado = await GerarLinkAfiliadoAsync(linkDeal, ct);
 
-            var htmlShopee = await httpClient.GetStringAsync(linkShopee, ct);
+            var htmlShopee = await httpClient.GetStringAsync(linkDeal, ct);
             var doc = new HtmlDocument();
             doc.LoadHtml(htmlShopee);
 
@@ -28,11 +25,11 @@ public class ShopeeScraperService(HttpClient httpClient) : IShopeeScraperService
 
             return new ProductInfo
             {
-                Titulo = ExtrairTituloDaShopee(doc),
-                Link = linkShopee,
+                Titulo = ExtrairTituloDaShopee(doc, linkDeal),
+                Link = linkAfiliado,
                 ImagemUrl = ExtrairImagemDaShopee(doc),
-                PrecoAtual = ExtrairPrecoAtualDaShopee(doc),
-                PrecoAnterior = ExtrairPrecoAnteriorDaShopee(doc)
+                PrecoAtual = "Shopee não divulga preços em sua página pública",
+                PrecoAnterior = "Shopee não divulga preços em sua página pública"
             };
         }
         catch
@@ -53,129 +50,113 @@ public class ShopeeScraperService(HttpClient httpClient) : IShopeeScraperService
         }
     }
 
-    private async Task<string> ObterLinkRealDaShopeeAsync(string linkDeal, CancellationToken ct)
+    private async Task<string> GerarLinkAfiliadoAsync(string originUrl, CancellationToken ct)
     {
+        var baseUrl = "https://open-api.affiliate.shopee.com.br/graphql";
+        var partnerId = "18344990407";
+        var partnerKey = "MZ77GUS36MRZ6YYYYOVV5SMC6QZQ7O7W";
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+        var body = new
+        {
+            query = "mutation { generateShortLink(input:{ originUrl:\"" + originUrl +
+                    "\", subIds:[\"s1\",\"s2\",\"s3\",\"s4\",\"s5\"] }) { shortLink } }"
+        };
+
+        var json = JsonSerializer.Serialize(body);
+        var signature = GerarAssinatura(partnerId, partnerKey, timestamp, json);
+
+        var authHeader = $"SHA256 Credential={partnerId}, Timestamp={timestamp}, Signature={signature}";
+        httpClient.DefaultRequestHeaders.Clear();
+        httpClient.DefaultRequestHeaders.Add("Authorization", authHeader);
+
+        var response =
+            await httpClient.PostAsync(baseUrl, new StringContent(json, Encoding.UTF8, "application/json"), ct);
+
+        if (!response.IsSuccessStatusCode)
+            return originUrl;
+
+        var result = await response.Content.ReadAsStringAsync(ct);
+        using var doc = JsonDocument.Parse(result);
+        var shortLink = doc.RootElement
+            .GetProperty("data")
+            .GetProperty("generateShortLink")
+            .GetProperty("shortLink")
+            .GetString();
+
+        return shortLink ?? originUrl;
+    }
+
+    private static string GerarAssinatura(string partnerId, string partnerKey, string timestamp, string payload)
+    {
+        var factor = $"{partnerId}{timestamp}{payload}{partnerKey}";
+        var bytes = Encoding.UTF8.GetBytes(factor);
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToHexString(hash).ToLower();
+    }
+
+    private static string ExtrairTituloDaShopee(HtmlDocument doc, string linkShopee)
+    {
+        if (string.IsNullOrWhiteSpace(linkShopee))
+            return string.Empty;
+
         try
         {
-            var html = await httpClient.GetStringAsync(linkDeal, ct);
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            var match = Regex.Match(linkShopee, @"shopee\.com\.br\/(?<titulo>.+)-i\.\d+\.\d+");
+            if (!match.Success)
+                return string.Empty;
 
-            var botao = doc.DocumentNode.SelectSingleNode(SeletorBotaoLoja);
-            if (botao == null) return null;
+            var tituloUrl = match.Groups["titulo"].Value;
 
-            var urlRedirect = botao.GetAttributeValue("href", null);
-            if (string.IsNullOrEmpty(urlRedirect)) return null;
+            tituloUrl = Uri.UnescapeDataString(tituloUrl);
 
-            using var handler = new HttpClientHandler();
-            handler.AllowAutoRedirect = true;
-            handler.MaxAutomaticRedirections = 10;
-            
-            using var client = new HttpClient(handler);
-            var response = await client.GetAsync(urlRedirect, HttpCompletionOption.ResponseHeadersRead, ct);
-            return response.RequestMessage?.RequestUri?.ToString();
+            tituloUrl = tituloUrl.Replace("-", " ");
+
+            var textoFinal = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(tituloUrl.ToLower());
+
+            return textoFinal.Trim();
         }
         catch
         {
-            return null;
+            return string.Empty;
         }
-    }
-
-    private static string ExtrairTituloDaShopee(HtmlDocument doc)
-    {
-        var seletores = new[]
-        {
-            "//div[contains(@class,'product-briefing')]//div[contains(@class,'_44qnta')]",
-            "//div[contains(@class,'attM6y')]//span",
-            "//div[contains(@class,'product-title')]"
-        };
-
-        foreach (var seletor in seletores)
-        {
-            var elemento = doc.DocumentNode.SelectSingleNode(seletor);
-            if (elemento != null)
-            {
-                var texto = elemento.InnerText?.Trim();
-                if (!string.IsNullOrWhiteSpace(texto))
-                    return texto;
-            }
-        }
-
-        return string.Empty;
     }
 
     private static string ExtrairImagemDaShopee(HtmlDocument doc)
     {
-        var imagem = doc.DocumentNode.SelectSingleNode(".//img[contains(@src, 'susercontent.com/file/')]");
-        if (imagem != null)
+        var html = doc.DocumentNode.InnerHtml;
+
+        var matches = Regex.Matches(html, "\"images\"\\s*:\\s*\\[(?<imgs>[^\\]]+)\\]");
+
+        if (matches.Count >= 2)
         {
-            var src = imagem.GetAttributeValue("src", "");
-            if (!string.IsNullOrWhiteSpace(src))
+            var segundo = matches[1].Groups["imgs"].Value;
+
+            var innerMatch = Regex.Match(segundo, "\"(?<img>br-[^\"]+)\"");
+            if (innerMatch.Success)
             {
-                return src.Replace("_tn", "");
+                var id = innerMatch.Groups["img"].Value;
+                return $"https://down-br.img.susercontent.com/file/{id}";
             }
         }
+
+        if (matches.Count == 1)
+        {
+            var primeiro = matches[0].Groups["imgs"].Value;
+            var innerMatch = Regex.Match(primeiro, "\"(?<img>br-[^\"]+)\"");
+            if (innerMatch.Success)
+            {
+                var id = innerMatch.Groups["img"].Value;
+                return $"https://down-br.img.susercontent.com/file/{id}";
+            }
+        }
+
+        var img = doc.DocumentNode
+            .SelectSingleNode("//img[contains(@src,'susercontent.com/file/')]");
+        var url = img?.GetAttributeValue("src", null);
+
+        if (!string.IsNullOrWhiteSpace(url))
+            return url.Split('?')[0];
 
         return string.Empty;
-    }
-
-    private string ExtrairPrecoAtualDaShopee(HtmlDocument doc)
-    {
-        var seletores = new[]
-        {
-            "//div[contains(@class,'pqTWkA')]",
-            "//div[contains(@class,'_3n5NQx')]"
-        };
-
-        foreach (var seletor in seletores)
-        {
-            var elemento = doc.DocumentNode.SelectSingleNode(seletor);
-            if (elemento != null)
-            {
-                var precoTexto = elemento.InnerText?.Trim();
-                var preco = ProcessarPreco(precoTexto);
-                if (!string.IsNullOrWhiteSpace(preco))
-                    return preco;
-            }
-        }
-
-        return null;
-    }
-
-    private string? ExtrairPrecoAnteriorDaShopee(HtmlDocument doc)
-    {
-        var seletores = new[]
-        {
-            "//div[contains(@class,'_3_ISdg')]//span[contains(@class,'_1k1Vcm')]",
-            "//div[contains(@class,'_3n5NQx')]/following-sibling::div[contains(@class,'rXF0YZ')]"
-        };
-
-        foreach (var seletor in seletores)
-        {
-            var elemento = doc.DocumentNode.SelectSingleNode(seletor);
-            if (elemento != null)
-            {
-                var precoTexto = elemento.InnerText?.Trim();
-                var preco = ProcessarPreco(precoTexto);
-                if (!string.IsNullOrWhiteSpace(preco))
-                    return preco;
-            }
-        }
-
-        return null;
-    }
-
-    private static string ProcessarPreco(string precoTexto)
-    {
-        if (string.IsNullOrWhiteSpace(precoTexto))
-            return null;
-
-        var precoLimpo = RegexLimpezaPreco.Replace(precoTexto, "")
-            .Replace("R$", "")
-            .Replace(" ", "")
-            .Replace(",", ".")
-            .Trim();
-
-        return precoLimpo;
     }
 }

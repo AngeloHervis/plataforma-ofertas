@@ -3,6 +3,7 @@ using plataforma.ofertas._Base;
 using plataforma.ofertas.Dto.Constantes;
 using plataforma.ofertas.Dto.Ofertas;
 using plataforma.ofertas.Interfaces.Ofertas;
+using plataforma.ofertas.Interfaces.Scrapers;
 
 namespace plataforma.ofertas.Controllers;
 
@@ -50,5 +51,17 @@ public class OfertasController : ControllerBase
         CancellationToken cancellationToken)
     {
         return await service.ConsultarAsync(id, cancellationToken).ToResponseResultAsync();
+    }
+
+    [HttpPost("gerar")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GerarLinkRastreavel(
+        [FromBody] GerarLinkAfiliadoRequestDto request,
+        [FromServices] IGerarLinkAfiliadoService service,
+        CancellationToken ct)
+    {
+        var result = await service.GerarAsync(request, ct);
+        return Ok(result);
     }
 }

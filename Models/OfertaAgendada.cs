@@ -12,17 +12,17 @@ public class OfertaAgendada : BaseModel
     [Column("titulo")]
     public string Titulo { get; set; }
 
-    [Column("preco")]
-    public string Preco { get; set; }
+    [Column("preco_atual")]
+    public string PrecoAtual { get; set; }
+    
+    [Column("preco_anterior")]
+    public string PrecoAnterior { get; set; }
 
     [Column("link")]
     public string Link { get; set; }
 
     [Column("imagem_url")]
     public string ImagemUrl { get; set; }
-
-    [Column("descricao")]
-    public string Descricao { get; set; }
 
     [Column("data_hora_envio")]
     public DateTime DataHoraEnvio { get; set; }

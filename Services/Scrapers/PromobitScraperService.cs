@@ -198,19 +198,40 @@ public class PromobitScraperService(
 
     private static int? CalcularPercentual(string precoAtual, string precoAnterior)
     {
-        if (string.IsNullOrEmpty(precoAnterior))
+        if (string.IsNullOrEmpty(precoAnterior) || string.IsNullOrEmpty(precoAtual))
             return null;
 
-        var precoAtualLimpo = precoAtual.Replace("R$", "").Replace(".", "").Replace(",", "");
-        var precoAnteriorLimpo = precoAnterior.Replace("R$", "").Replace(".", "").Replace(",", "");
+        var valorAtual = ExtrairValorDecimal(precoAtual);
+        var valorAnterior = ExtrairValorDecimal(precoAnterior);
 
-        if (!int.TryParse(precoAtualLimpo, out var precoAtualCentavos) ||
-            !int.TryParse(precoAnteriorLimpo, out var precoAnteriorCentavos) ||
-            precoAnteriorCentavos <= 0)
+        if (!valorAtual.HasValue || !valorAnterior.HasValue || valorAnterior <= 0)
             return null;
 
-        var desconto = ((precoAnteriorCentavos - precoAtualCentavos) * 100) / precoAnteriorCentavos;
+        var desconto = (int)(((valorAnterior.Value - valorAtual.Value) * 100) / valorAnterior.Value);
         return desconto;
+    }
+
+    private static decimal? ExtrairValorDecimal(string preco)
+    {
+        if (string.IsNullOrWhiteSpace(preco)) return null;
+        
+        var precoLimpo = preco.Replace("R$", "").Replace(" ", "").Trim();
+        
+        // Se tem vírgula, é formato brasileiro (pontos são separadores de milhares)
+        if (precoLimpo.Contains(','))
+        {
+            var partes = precoLimpo.Split(',');
+            if (partes.Length == 2 && partes[1].Length == 2)
+            {
+                var parteInteira = partes[0].Replace(".", "");
+                var centavos = partes[1];
+                
+                if (decimal.TryParse($"{parteInteira}.{centavos}", System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var valor))
+                    return valor;
+            }
+        }
+        
+        return null;
     }
 
     private const string UrlBasePromobit = "https://www.promobit.com.br";

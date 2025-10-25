@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using plataforma.ofertas._Base;
 using plataforma.ofertas.Interfaces.Scrapers;
@@ -13,7 +14,7 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
         "https://www.mercadolivre.com.br/social/tg20251019181553/lists/34e42115-2050-4a3d-ae1a-237fc26cf44b?matt_tool=42647359&forceInApp=true"
     };
 
-    public async Task<CommandResult<List<Oferta>>> ObterInformacoesCompletasMercadoLivreAsync(
+    public async Task<CommandResult<List<Oferta>>> ObterInformacoesCompletasListaMercadoLivreAsync(
         CancellationToken cancellationToken)
     {
         try
@@ -61,19 +62,19 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
                     var linkProduto = NormalizeMercadoLivreLink(a.RawHref);
                     if (string.IsNullOrWhiteSpace(linkProduto)) continue;
 
-                    var precoAtual = ExtrairPrecoAndes(card, atual: true);
-                    var precoAnterior = ExtrairPrecoAndes(card, atual: false);
-
                     var info = await ObterInformacoesPaginaMercadoLivreAsync(linkProduto, cancellationToken);
+
+                    var precoAnteriorValido = ValidarPrecoAnteriorValido(info.PrecoAnterior, info.PrecoAtual);
+                    if (!precoAnteriorValido) info.PrecoAnterior = null;
 
                     ofertas.Add(new Oferta
                     {
                         Id = Guid.NewGuid(),
                         Fonte = "Mercado Livre",
                         Titulo = titulo,
-                        PrecoAtual = precoAtual,
-                        PrecoAnterior = precoAnterior,
-                        DescontoPercentual = CalcularPercentual(precoAtual, precoAnterior),
+                        PrecoAtual = info.PrecoAtual,
+                        PrecoAnterior = info.PrecoAnterior,
+                        DescontoPercentual = CalcularPercentual(info.PrecoAtual, info.PrecoAnterior),
                         Link = linkProduto,
                         ImagemUrl = info.ImagemUrl,
                         PublicadoEm = DateTime.UtcNow
@@ -88,6 +89,26 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
             return CommandResult<List<Oferta>>.InternalError(
                 $"Erro ao raspar ofertas do Mercado Livre: {ex.Message}");
         }
+    }
+
+    public async Task<ProductInfo> ObterInformacoesCompletasMercadoLivreAsync(string linkDeal, CancellationToken ct)
+    {
+        return await ObterInformacoesPaginaMercadoLivreAsync(linkDeal, ct);
+    }
+
+
+    private bool ValidarPrecoAnteriorValido(string precoAnterior, string precoAtual)
+    {
+        if (string.IsNullOrWhiteSpace(precoAnterior) || string.IsNullOrWhiteSpace(precoAtual))
+            return false;
+
+        var valorAnterior = ExtrairValorNumerico(precoAnterior);
+        var valorAtual = ExtrairValorNumerico(precoAtual);
+
+        if (!valorAnterior.HasValue || !valorAtual.HasValue)
+            return false;
+
+        return valorAnterior > valorAtual;
     }
 
     private async Task<ProductInfo> ObterInformacoesPaginaMercadoLivreAsync(
@@ -110,9 +131,18 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
+            var tituloNode = doc.DocumentNode.SelectSingleNode("//h1[contains(@class,'ui-pdp-title')]");
+            var titulo = LimparTexto(tituloNode?.InnerText ?? "");
+
+            var precoAtual = ExtrairPrecoAndes(doc.DocumentNode, true);
+            var precoAnterior = ExtrairPrecoAndes(doc.DocumentNode, false);
+
             return new ProductInfo
             {
+                Titulo = titulo,
                 Link = linkProduto,
+                PrecoAtual = precoAtual,
+                PrecoAnterior = precoAnterior,
                 ImagemUrl = ExtrairImagemPdp(doc),
             };
         }
@@ -131,8 +161,6 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
 
         if (root == null) return null;
 
-        var simbolo = root.SelectSingleNode(".//span[contains(@class,'andes-money-amount__currency-symbol')]")
-            ?.InnerText?.Trim();
         var inteiro = root.SelectSingleNode(".//span[contains(@class,'andes-money-amount__fraction')]")?.InnerText
             ?.Trim();
         var cents = root.SelectSingleNode(".//span[contains(@class,'andes-money-amount__cents')]")?.InnerText
@@ -140,9 +168,16 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
 
         if (!string.IsNullOrWhiteSpace(inteiro))
         {
-            var preco =
-                $"{(simbolo ?? "R$").Replace("&nbsp;", "").Trim()} {inteiro}{(string.IsNullOrWhiteSpace(cents) ? "" : $",{cents}")}";
-            return NormalizarMoeda(preco);
+            // Remove apenas pontos que são separadores de milhares, não pontos decimais
+            inteiro = inteiro.Replace(".", "");
+            var centavos = cents ?? "00";
+
+            if (decimal.TryParse($"{inteiro}.{centavos}", NumberStyles.Float,
+                    CultureInfo.InvariantCulture, out var valor))
+            {
+                // Formatar usando separador de milhares brasileiro
+                return valor.ToString("C", new CultureInfo("pt-BR"));
+            }
         }
 
         var aria = root.GetAttributeValue("aria-label", "");
@@ -151,6 +186,7 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
 
         return null;
     }
+
 
     private static string ExtrairImagemPdp(HtmlDocument doc)
     {
@@ -172,34 +208,57 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
     private static string LimparTexto(string s)
         => string.IsNullOrWhiteSpace(s) ? "" : Regex.Replace(s, @"\s+", " ").Trim();
 
-    private static string NormalizarMoeda(string preco)
-    {
-        if (string.IsNullOrWhiteSpace(preco))
-            return null;
-
-        return preco.Replace("&nbsp;", " ").Replace("  ", " ").Trim();
-    }
-
     private static string ConverterAriaLabelParaPreco(string aria)
     {
         var m = Regex.Match(aria, @"(\d[\d\.]*)\s*reais(?:\s*com\s*(\d{1,2})\s*centavos)?",
             RegexOptions.IgnoreCase);
         if (!m.Success) return null;
-        var inteiro = m.Groups[1].Value;
+
+        var inteiro = m.Groups[1].Value.Replace(".", ""); // Remove pontos (separadores de milhares)
         var cents = m.Groups[2].Success ? m.Groups[2].Value.PadLeft(2, '0') : "00";
-        return $"R$ {inteiro},{cents}";
+
+        if (decimal.TryParse($"{inteiro}.{cents}", NumberStyles.Float, CultureInfo.InvariantCulture, out var valor))
+        {
+            return valor.ToString("C", new CultureInfo("pt-BR"));
+        }
+
+        return null;
     }
 
     private static int? CalcularPercentual(string precoAtual, string precoAnterior)
     {
         if (string.IsNullOrWhiteSpace(precoAnterior) || string.IsNullOrWhiteSpace(precoAtual)) return null;
 
-        var atual = Regex.Replace(precoAtual.Replace("R$", ""), @"[^\d]", "");
-        var antes = Regex.Replace(precoAnterior.Replace("R$", ""), @"[^\d]", "");
-        if (!int.TryParse(atual, out var a) || !int.TryParse(antes, out var b) || b <= 0) return null;
+        var valorAtual = ExtrairValorNumerico(precoAtual);
+        var valorAnterior = ExtrairValorNumerico(precoAnterior);
 
-        var desconto = ((b - a) * 100) / b;
+        if (!valorAtual.HasValue || !valorAnterior.HasValue || valorAnterior <= 0) return null;
+
+        var desconto = (int)(((valorAnterior.Value - valorAtual.Value) * 100) / valorAnterior.Value);
         return desconto;
+    }
+
+    private static decimal? ExtrairValorNumerico(string preco)
+    {
+        if (string.IsNullOrWhiteSpace(preco)) return null;
+
+        var precoLimpo = preco.Replace("R$", "").Replace(" ", "").Trim();
+
+        if (precoLimpo.Contains(','))
+        {
+            var partes = precoLimpo.Split(',');
+            if (partes.Length == 2 && partes[1].Length == 2)
+            {
+                var parteInteira = partes[0].Replace(".", "");
+                var centavos = partes[1];
+
+                if (decimal.TryParse($"{parteInteira}.{centavos}", NumberStyles.Float, CultureInfo.InvariantCulture,
+                        out var valor))
+                    return valor;
+            }
+        }
+
+        return null;
     }
 
     private static string BuildDedupKey(string href, string tituloFallback)

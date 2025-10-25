@@ -17,7 +17,8 @@ public class ConsultaOfertaDetalheService(IOfertaRepository repo) : IConsultaOfe
             Id = oferta.Id,
             Fonte = oferta.Fonte,
             Titulo = oferta.Titulo,
-            Preco = oferta.PrecoAtual,
+            PrecoAnterior = oferta.PrecoAnterior,
+            PrecoAtual = oferta.PrecoAtual,
             Link = oferta.Link,
             ImagemUrl = oferta.ImagemUrl,
             PublicadoEm = oferta.PublicadoEm
