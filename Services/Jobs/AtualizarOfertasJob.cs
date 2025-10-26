@@ -1,6 +1,7 @@
 ﻿using plataforma.ofertas.Interfaces.Jobs;
 using plataforma.ofertas.Interfaces.Ofertas;
 using plataforma.ofertas.Interfaces.Scrapers;
+using plataforma.ofertas.Models;
 
 namespace plataforma.ofertas.Services.Jobs;
 
@@ -27,11 +28,20 @@ public class AtualizarOfertasJob(
             .Where(r => !r.IsError && r.Data is not null)
             .SelectMany(r => r.Data!)
             .Where(o => !linksExistentes.Contains(o.Link))
+            .Where(ValidarOferta)
             .DistinctBy(o => new { o.Titulo, o.Link })
             .ToList();
 
         if (ofertasValidas.Count == 0) return;
 
         await repo.SalvarVariasAsync(ofertasValidas, ct);
+    }
+
+    private static bool ValidarOferta(Oferta oferta)
+    {
+        return !string.IsNullOrWhiteSpace(oferta.Titulo) &&
+               !string.IsNullOrWhiteSpace(oferta.Link) &&
+               !string.IsNullOrWhiteSpace(oferta.PrecoAtual) &&
+                oferta.PrecoAtual != "Não encontrado";
     }
 }

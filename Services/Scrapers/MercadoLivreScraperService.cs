@@ -97,7 +97,7 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
     }
 
 
-    private bool ValidarPrecoAnteriorValido(string precoAnterior, string precoAtual)
+    private static bool ValidarPrecoAnteriorValido(string precoAnterior, string precoAtual)
     {
         if (string.IsNullOrWhiteSpace(precoAnterior) || string.IsNullOrWhiteSpace(precoAtual))
             return false;
