@@ -9,6 +9,7 @@ public class AtualizarOfertasJob(
     IPelandoScraperService pelando,
     IPromobitScraperService promobit,
     IMercadoLivreScraperService meli,
+    ILogger<AtualizarOfertasJob> logger,
     IOfertaRepository repo
 ) : IRunnableService
 {
@@ -16,11 +17,15 @@ public class AtualizarOfertasJob(
 
     public async Task RunAsync(CancellationToken ct)
     {
+        logger.LogInformation("Iniciando atualização de ofertas...");
+
         var resultados = await Task.WhenAll(
             pelando.ScrapePelandoAsync(ct),
             promobit.ScrapePromobitAsync(ct),
             meli.ObterInformacoesCompletasListaMercadoLivreAsync(ct)
         );
+
+        logger.LogInformation("Scraping concluído. Buscando links existentes...");
 
         var linksExistentes = await repo.ObterLinksExistentesAsync(ct);
 
@@ -32,9 +37,17 @@ public class AtualizarOfertasJob(
             .DistinctBy(o => new { o.Titulo, o.Link })
             .ToList();
 
-        if (ofertasValidas.Count == 0) return;
+        logger.LogInformation("Ofertas válidas encontradas: {Count}", ofertasValidas.Count);
+
+        if (ofertasValidas.Count == 0)
+        {
+            logger.LogInformation("Nenhuma nova oferta válida encontrada.");
+            return;
+        }
 
         await repo.SalvarVariasAsync(ofertasValidas, ct);
+
+        logger.LogInformation("Novas ofertas salvas com sucesso.");
     }
 
     private static bool ValidarOferta(Oferta oferta)
@@ -42,6 +55,6 @@ public class AtualizarOfertasJob(
         return !string.IsNullOrWhiteSpace(oferta.Titulo) &&
                !string.IsNullOrWhiteSpace(oferta.Link) &&
                !string.IsNullOrWhiteSpace(oferta.PrecoAtual) &&
-                oferta.PrecoAtual != "Não encontrado";
+               oferta.PrecoAtual != "Não encontrado";
     }
 }
