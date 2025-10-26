@@ -2,11 +2,11 @@
 
 public class ProductInfo
 {
-    public string Titulo { get; set; }
-    public string Link { get; set; }
-    public string ImagemUrl { get; set; }
-    public string PrecoAtual { get; set; }
-    public string PrecoAnterior { get; set; }
+    public string Titulo { get; set; } = "Não encontrado";
+    public string Link { get; set; } = "Não encontrado";
+    public string ImagemUrl { get; set; } = "Não encontrado";
+    public string PrecoAtual { get; set; } = "Não encontrado";
+    public string PrecoAnterior { get; set; } = "Não encontrado";
 
     public bool IsValid => !string.IsNullOrWhiteSpace(Titulo) &&
                            !string.IsNullOrWhiteSpace(Link) &&
