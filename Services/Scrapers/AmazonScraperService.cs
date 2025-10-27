@@ -12,12 +12,12 @@ public class AmazonScraperService(IScraperApiService scraperApiService) : IAmazo
     {
         try
         {
-            var linkAmazon = AplicarTagAfiliado(linkDeal, fonte);
+            var linkAmazon = AplicarTagAfiliado(linkDeal);
 
             if (string.IsNullOrEmpty(linkAmazon))
                 return new Oferta();
-            
-            var oferta = await scraperApiService.ObterOfertaAmazonAsync(linkAmazon, ct);
+
+            var oferta = await scraperApiService.ObterOfertaAmazonAsync(linkAmazon, fonte, ct);
             return oferta ?? new Oferta();
         }
         catch
@@ -26,20 +26,17 @@ public class AmazonScraperService(IScraperApiService scraperApiService) : IAmazo
         }
     }
 
-    private static string AplicarTagAfiliado(string url, string fonte)
+    private static string AplicarTagAfiliado(string url)
     {
         if (string.IsNullOrEmpty(url) || !url.Contains("amazon."))
             return url;
 
         var tag = "beloto-20";
-        var urlLimpa = url;
-
-        var match = Regex.Match(urlLimpa, @"(https://www\.amazon\.com\.br/dp/[^/?]+)");
+        var match = Regex.Match(url, @"(https://www\.amazon\.com\.br/[^/]+/dp/[A-Za-z0-9]+)");
         if (match.Success)
-        {
-            urlLimpa = match.Groups[1].Value;
-        }
+            url = match.Groups[1].Value;
 
-        return $"{urlLimpa}?tag={tag}";
+
+        return $"{url}?tag={tag}";
     }
 }

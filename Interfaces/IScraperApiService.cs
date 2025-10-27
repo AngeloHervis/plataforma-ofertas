@@ -4,5 +4,5 @@ namespace plataforma.ofertas.Interfaces;
 
 public interface IScraperApiService
 {
-    Task<Oferta> ObterOfertaAmazonAsync(string url, CancellationToken ct);
+    Task<Oferta> ObterOfertaAmazonAsync(string url, string fonte, CancellationToken ct);
 }

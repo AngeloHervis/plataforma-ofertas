@@ -7,7 +7,7 @@ namespace plataforma.ofertas.Services.Scrapers;
 
 public class ScraperApiService : IScraperApiService
 {
-    public async Task<Oferta> ObterOfertaAmazonAsync(string url, CancellationToken ct)
+    public async Task<Oferta> ObterOfertaAmazonAsync(string url, string fonte, CancellationToken ct)
     {
         try
         {
@@ -20,7 +20,7 @@ public class ScraperApiService : IScraperApiService
                 throw new Exception("Error in API Call");
 
             var responseBody = await response.Content.ReadAsStringAsync(ct);
-            var oferta = ExtrairOfertaDeMarkdown(responseBody, url);
+            var oferta = ExtrairOfertaDeMarkdown(responseBody, url, fonte);
             return oferta;
         }
         catch (Exception ex)
@@ -30,7 +30,7 @@ public class ScraperApiService : IScraperApiService
         }
     }
 
-    private Oferta ExtrairOfertaDeMarkdown(string responseBody, string url)
+    private Oferta ExtrairOfertaDeMarkdown(string responseBody, string url, string fonte)
     {
         try
         {
@@ -57,7 +57,8 @@ public class ScraperApiService : IScraperApiService
                 .Select(urlImagem => urlImagem.EndsWith("..jpg") ? urlImagem.Replace("..jpg", ".jpg") : urlImagem)
                 .ToList();
 
-            var fonte = ExtrairFonteDaUrl(url);
+            if (string.IsNullOrEmpty(fonte))
+                fonte = ExtrairFonteDaUrl(url);
 
             var descontoPercentual = HelpersExtensions.CalcularPercentual(precoAtual, precoAnterior);
 

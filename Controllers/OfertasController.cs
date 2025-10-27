@@ -135,16 +135,4 @@ public class OfertasController : ControllerBase
     {
         return await service.DeletarAsync(id, ct).ToResponseResultAsync();
     }
-
-    [HttpPost("scraper-api")]
-    [Produces(TiposRequisicaoERetorno.JsonText)]
-    [ProducesResponseType(typeof(OfertaDetalheDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> ObterDetalhesOfertaViaScraperApi(
-        [FromQuery] string url,
-        [FromServices] IScraperApiService service,
-        CancellationToken ct)
-    {
-        var oferta = await service.ObterOfertaAmazonAsync(url, ct);
-        return Ok(oferta);
-    }
 }
