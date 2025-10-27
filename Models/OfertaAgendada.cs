@@ -27,8 +27,8 @@ public class OfertaAgendada : BaseModel
     [Column("data_hora_envio")]
     public DateTime DataHoraEnvio { get; set; }
 
-    [Column("enviada")]
-    public bool Enviada { get; set; } = false;
+    [Column("status")]
+    public string Status { get; set; }
 
     [Column("criado_em")]
     public DateTime CriadoEm { get; set; } = DateTime.UtcNow;

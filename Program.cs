@@ -108,7 +108,6 @@ builder.Services.AddScoped<IConsultaOfertasDoBancoService, ConsultaOfertasDoBanc
 builder.Services.AddScoped<IAgendarOfertaService, AgendarOfertaService>();
 builder.Services.AddScoped<IScraperApiService, ScraperApiService>();
 builder.Services.AddScoped<IListarOfertasAgendadasService, ListarOfertasAgendadasService>();
-builder.Services.AddScoped<IObterOfertaAgendadaDetalheService, ObterOfertaAgendadaDetalheService>();
 builder.Services.AddScoped<IConsultaOfertaDetalheService, ConsultaOfertaDetalheService>();
 builder.Services.AddScoped<IGerarLinkAfiliadoService, GerarLinkAfiliadoService>();
 builder.Services.AddScoped<IAgendarEnvioWhatsappService, AgendarEnvioWhatsappService>();

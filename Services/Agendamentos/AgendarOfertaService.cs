@@ -19,7 +19,7 @@ public class AgendarOfertaService(IOfertaAgendadaRepository repo, IAgendarEnvioW
             Link = request.Link,
             ImagemUrl = request.ImagemUrl,
             DataHoraEnvio = request.DataHoraAgendamento,
-            Enviada = false,
+            Status = "Pendente",
             PorcentagemComissao = request.PorcentagemComissao,
             Cta = request.CtaPersonalizado,
             CriadoEm = DateTime.UtcNow
@@ -43,7 +43,7 @@ public class AgendarOfertaService(IOfertaAgendadaRepository repo, IAgendarEnvioW
             Link = oferta.Link,
             ImagemUrl = oferta.ImagemUrl,
             DataHoraEnvio = oferta.DataHoraEnvio,
-            Enviada = oferta.Enviada,
+            Status = "Pendente",
             CriadoEm = oferta.CriadoEm,
             AtualizadoEm = oferta.AtualizadoEm
         });

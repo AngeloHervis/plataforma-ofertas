@@ -9,7 +9,7 @@ public class OfertaAgendadaDetalheDto
     public string Link { get; set; }
     public string ImagemUrl { get; set; }
     public DateTime DataHoraEnvio { get; set; }
-    public bool Enviada { get; set; }
+    public string Status { get; set; }
     public DateTime CriadoEm { get; set; }
     public DateTime? AtualizadoEm { get; set; }
 }

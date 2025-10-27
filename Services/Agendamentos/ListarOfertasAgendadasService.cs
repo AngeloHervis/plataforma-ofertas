@@ -15,12 +15,15 @@ public class ListarOfertasAgendadasService(IOfertaAgendadaRepository repo) : ILi
             .OrderBy(i => i.DataHoraEnvio)
             .Select(i => new OfertaAgendadaResumoDto
             {
-                Id = i.Id,
+                OfertaId = i.Id,
+                PrecoAnterior = i.PrecoAnterior,
+                Link = i.Link,
+                PorcentagemComissao = i.PorcentagemComissao,
                 Titulo = i.Titulo,
-                Preco = i.PrecoAtual,
+                PrecoAtual = i.PrecoAtual,
                 ImagemUrl = i.ImagemUrl,
                 DataHoraAgendamento = i.DataHoraEnvio,
-                Enviada = i.Enviada
+                Status = "Pendente",
             })
             .ToList();
 

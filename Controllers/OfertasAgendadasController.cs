@@ -31,15 +31,4 @@ public class OfertasAgendadasController : ControllerBase
     {
         return await service.ListarAsync(ct).ToResponseResultAsync();
     }
-
-    [HttpGet("{id:guid}")]
-    [Produces(TiposRequisicaoERetorno.JsonText)]
-    [ProducesResponseType(typeof(OfertaAgendadaDetalheDto), StatusCodes.Status200OK)]
-    public async Task<IActionResult> ObterDetalhe(
-        [FromRoute] Guid id,
-        [FromServices] IObterOfertaAgendadaDetalheService service,
-        CancellationToken ct)
-    {
-        return await service.ObterAsync(id, ct).ToResponseResultAsync();
-    }
 }
