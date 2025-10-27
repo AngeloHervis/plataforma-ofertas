@@ -20,7 +20,10 @@ public class Oferta : BaseModel
 
     [Column("link")] public string Link { get; set; } = string.Empty;
 
-    [Column("imagem_url")] public string ImagemUrl { get; set; }
+    [Column("imagens_url")] public string ImagensUrl { get; set; }
+    [Column("imagem_url_principal")] public string ImagemUrlPrincipal { get; set; }
 
     [Column("publicado_em")] public DateTime PublicadoEm { get; set; } = DateTime.UtcNow;
+
+    [Column("porcentagem_comissao")] public int? PorcentagemComissao { get; set; }
 }

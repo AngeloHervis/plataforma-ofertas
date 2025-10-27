@@ -8,6 +8,7 @@ public record OfertaDetalheDto
     public string PrecoAtual { get; init; }
     public string PrecoAnterior { get; init; }
     public string Link { get; init; }
-    public string ImagemUrl { get; init; }
+    public List<string> ImagensUrl { get; init; }
+    public string ImagemUrlPrincipal { get; init; }
     public DateTime? PublicadoEm { get; init; }
 }

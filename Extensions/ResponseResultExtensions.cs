@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using plataforma.ofertas._Base;
 
-namespace plataforma.ofertas._Base;
+namespace plataforma.ofertas.Extensions;
 
 /// <summary>
 /// Obter resposta do resultado

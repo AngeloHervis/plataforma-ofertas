@@ -8,8 +8,8 @@ namespace plataforma.ofertas.Services.Scrapers;
 
 public class PromobitScraperService(
     HttpClient httpClient,
-    IAmazonScraperService amazonScraperService,
-    IShopeeScraperService shopeeScraperService) : IPromobitScraperService
+    IAmazonScraperService amazonScraperService
+) : IPromobitScraperService
 {
     public async Task<CommandResult<List<Oferta>>> ScrapePromobitAsync(CancellationToken ct)
     {
@@ -63,16 +63,7 @@ public class PromobitScraperService(
         CancellationToken ct)
     {
         if (nomeLoja.Contains("Amazon", StringComparison.OrdinalIgnoreCase) || urlLoja.Contains("amazon."))
-        {
             await ObterProdutoAmazon(linkPromocao, ofertas, ct);
-            return;
-        }
-
-        if (nomeLoja.Contains("Shopee", StringComparison.OrdinalIgnoreCase) || urlLoja.Contains("shopee."))
-        {
-            await ObterProdutoShopee(linkPromocao, ofertas, ct);
-            return;
-        }
     }
 
     private async Task ObterProdutoAmazon(string linkPromocao, List<Oferta> ofertas, CancellationToken ct)
@@ -82,23 +73,7 @@ public class PromobitScraperService(
 
         var fonte = "Promobit";
         var infoAmazon = await amazonScraperService.ObterInformacoesCompletasDaAmazonAsync(linkRealAmazon, fonte, ct);
-        if (infoAmazon.IsValid)
-        {
-            var ofertaAmazon = new Oferta
-            {
-                Id = Guid.NewGuid(),
-                Fonte = fonte,
-                Titulo = infoAmazon.Titulo,
-                Link = infoAmazon.Link,
-                ImagemUrl = infoAmazon.ImagemUrl,
-                PrecoAtual = infoAmazon.PrecoAtual,
-                PrecoAnterior = infoAmazon.PrecoAnterior,
-                DescontoPercentual = CalcularPercentual(infoAmazon.PrecoAtual, infoAmazon.PrecoAnterior),
-                PublicadoEm = DateTime.UtcNow
-            };
-
-            ofertas.Add(ofertaAmazon);
-        }
+        ofertas.Add(infoAmazon);
     }
 
     private async Task<string> ObterLinkRealAmazonDoPromobit(string linkPromocao, CancellationToken ct)
@@ -146,28 +121,6 @@ public class PromobitScraperService(
         }
     }
 
-    private async Task ObterProdutoShopee(string linkPromocao, List<Oferta> ofertas, CancellationToken ct)
-    {
-        var infoShopee = await shopeeScraperService.ObterInformacoesCompletasDaShopeeAsync(linkPromocao, ct);
-        if (infoShopee.IsValid)
-        {
-            var ofertaShopee = new Oferta
-            {
-                Id = Guid.NewGuid(),
-                Fonte = "Promobit",
-                Titulo = infoShopee.Titulo,
-                Link = infoShopee.Link,
-                ImagemUrl = infoShopee.ImagemUrl,
-                PrecoAtual = infoShopee.PrecoAtual,
-                PrecoAnterior = infoShopee.PrecoAnterior,
-                DescontoPercentual = CalcularPercentual(infoShopee.PrecoAtual, infoShopee.PrecoAnterior),
-                PublicadoEm = DateTime.UtcNow
-            };
-
-            ofertas.Add(ofertaShopee);
-        }
-    }
-
     private static (string NomeLoja, string UrlLoja) ExtrairInformacoesDaLoja(HtmlNode cartao)
     {
         var nomeLoja = cartao.SelectSingleNode(SeletorLoja)?.InnerText?.Trim() ?? string.Empty;
@@ -196,48 +149,13 @@ public class PromobitScraperService(
         return ehNomePermitido || ehUrlPermitida;
     }
 
-    private static int? CalcularPercentual(string precoAtual, string precoAnterior)
-    {
-        if (string.IsNullOrEmpty(precoAnterior) || string.IsNullOrEmpty(precoAtual))
-            return null;
-
-        var valorAtual = ExtrairValorDecimal(precoAtual);
-        var valorAnterior = ExtrairValorDecimal(precoAnterior);
-
-        if (!valorAtual.HasValue || !valorAnterior.HasValue || valorAnterior <= 0)
-            return null;
-
-        var desconto = (int)(((valorAnterior.Value - valorAtual.Value) * 100) / valorAnterior.Value);
-        return desconto;
-    }
-
-    private static decimal? ExtrairValorDecimal(string preco)
-    {
-        if (string.IsNullOrWhiteSpace(preco)) return null;
-        
-        var precoLimpo = preco.Replace("R$", "").Replace(" ", "").Trim();
-        
-        // Se tem vírgula, é formato brasileiro (pontos são separadores de milhares)
-        if (precoLimpo.Contains(','))
-        {
-            var partes = precoLimpo.Split(',');
-            if (partes.Length == 2 && partes[1].Length == 2)
-            {
-                var parteInteira = partes[0].Replace(".", "");
-                var centavos = partes[1];
-                
-                if (decimal.TryParse($"{parteInteira}.{centavos}", System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var valor))
-                    return valor;
-            }
-        }
-        
-        return null;
-    }
-
     private const string UrlBasePromobit = "https://www.promobit.com.br";
     private const string UrlRecentesPromobit = "https://www.promobit.com.br/promocoes/recentes/";
     private const string SeletorCartaoPromocao = "//a[contains(@class,'no-underline') and contains(@href,'/oferta/')]";
-    private const string SeletorTitulo = ".//span[contains(@class,'whitespace-pre-wrap') and contains(@class,'line-clamp-2')]";
+
+    private const string SeletorTitulo =
+        ".//span[contains(@class,'whitespace-pre-wrap') and contains(@class,'line-clamp-2')]";
+
     private const string SeletorLoja = ".//span[contains(@class,'truncate') and contains(@class,'whitespace-nowrap')]";
     private static readonly string[] LojasPermitidas = ["Amazon", "Shopee"];
 }

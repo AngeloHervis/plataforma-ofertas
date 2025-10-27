@@ -35,4 +35,10 @@ public class OfertaAgendada : BaseModel
 
     [Column("atualizado_em")]
     public DateTime? AtualizadoEm { get; set; }
+    
+    [Column("cta")]
+    public string Cta { get; set; }
+    
+    [Column("porcentagem_comissao")]
+    public int? PorcentagemComissao { get; set; }
 }

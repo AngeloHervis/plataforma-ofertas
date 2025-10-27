@@ -76,7 +76,7 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
                         PrecoAnterior = info.PrecoAnterior,
                         DescontoPercentual = CalcularPercentual(info.PrecoAtual, info.PrecoAnterior),
                         Link = linkProduto,
-                        ImagemUrl = info.ImagemUrl,
+                        ImagensUrl = info.ImagemUrl,
                         PublicadoEm = DateTime.UtcNow
                     });
                 }
@@ -154,36 +154,42 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
 
     private static string ExtrairPrecoAndes(HtmlNode card, bool atual)
     {
-        var root =
-            card.SelectSingleNode(atual
-                ? ".//div[contains(@class,'poly-price__current')]|.//div[contains(@class,'price__current')]"
-                : ".//div[contains(@class,'poly-price__before')]//s|.//s[contains(@class,'andes-money-amount')]");
-
+        var root = card.SelectSingleNode(atual
+            ? ".//div[contains(@class,'ui-pdp-price__second-line')]//span[contains(@class,'andes-money-amount')]"
+            : ".//div[contains(@class,'poly-price__before')]//s"
+              + "|.//s[contains(@class,'andes-money-amount')]");
+    
         if (root == null) return null;
-
-        var inteiro = root.SelectSingleNode(".//span[contains(@class,'andes-money-amount__fraction')]")?.InnerText
-            ?.Trim();
-        var cents = root.SelectSingleNode(".//span[contains(@class,'andes-money-amount__cents')]")?.InnerText
-            ?.Trim();
-
+    
+        var inteiro = root.SelectSingleNode(".//span[contains(@class,'andes-money-amount__fraction')]")?.InnerText?.Trim();
+        var cents = root.SelectSingleNode(".//span[contains(@class,'andes-money-amount__cents')]")?.InnerText?.Trim();
+    
+        if (string.IsNullOrWhiteSpace(inteiro) || string.IsNullOrWhiteSpace(cents))
+        {
+            var aria = root.GetAttributeValue("aria-label", "");
+            if (!string.IsNullOrWhiteSpace(aria))
+                return ConverterAriaLabelParaPreco(aria);
+    
+            var metaPrice = root.SelectSingleNode(".//meta[@itemprop='price']")?.GetAttributeValue("content", "");
+            if (!string.IsNullOrWhiteSpace(metaPrice) && metaPrice.Contains('.'))
+            {
+                var partes = metaPrice.Split('.');
+                inteiro ??= partes[0];
+                cents ??= partes.Length > 1 ? partes[1] : "00";
+            }
+        }
+    
         if (!string.IsNullOrWhiteSpace(inteiro))
         {
-            // Remove apenas pontos que são separadores de milhares, não pontos decimais
             inteiro = inteiro.Replace(".", "");
             var centavos = cents ?? "00";
-
-            if (decimal.TryParse($"{inteiro}.{centavos}", NumberStyles.Float,
-                    CultureInfo.InvariantCulture, out var valor))
+    
+            if (decimal.TryParse($"{inteiro}.{centavos}", NumberStyles.Float, CultureInfo.InvariantCulture, out var valor))
             {
-                // Formatar usando separador de milhares brasileiro
                 return valor.ToString("C", new CultureInfo("pt-BR"));
             }
         }
-
-        var aria = root.GetAttributeValue("aria-label", "");
-        if (!string.IsNullOrWhiteSpace(aria))
-            return ConverterAriaLabelParaPreco(aria);
-
+    
         return null;
     }
 

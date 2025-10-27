@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using plataforma.ofertas._Base;
+using plataforma.ofertas.Extensions;
 using plataforma.ofertas.Interfaces.Scrapers;
 using plataforma.ofertas.Models;
 
@@ -78,39 +79,19 @@ public class PelandoScraperService(
             await ObterProdutoAmazon(linkPromocao, ofertas, ct);
             return;
         }
-
-        if (nomeLoja.Contains("Shopee", StringComparison.OrdinalIgnoreCase) || urlLoja.Contains("shopee."))
-        {
-            await ObterProdutoShopee(linkPromocao, ofertas, ct);
-            return;
-        }
     }
 
     private async Task ObterProdutoAmazon(string linkPromocao, List<Oferta> ofertas, CancellationToken ct)
     {
         var linkRealAmazon = await ObterLinkRealAmazonDoPelando(linkPromocao, ct);
         if (string.IsNullOrEmpty(linkRealAmazon)) return;
-        
+
         var fonte = "Pelando";
         var infoAmazon = await amazonScraperService.ObterInformacoesCompletasDaAmazonAsync(linkRealAmazon, fonte, ct);
-        if (infoAmazon.IsValid)
-        {
-            var ofertaAmazon = new Oferta
-            {
-                Id = Guid.NewGuid(),
-                Fonte = fonte,
-                Titulo = infoAmazon.Titulo,
-                Link = infoAmazon.Link,
-                ImagemUrl = infoAmazon.ImagemUrl,
-                PrecoAtual = infoAmazon.PrecoAtual,
-                PrecoAnterior = infoAmazon.PrecoAnterior,
-                DescontoPercentual = CalcularPercentual(infoAmazon.PrecoAtual, infoAmazon.PrecoAnterior),
-                PublicadoEm = DateTime.UtcNow
-            };
 
-            ofertas.Add(ofertaAmazon);
-        }
+        ofertas.Add(infoAmazon);
     }
+
 
     private async Task<string> ObterLinkRealAmazonDoPelando(string linkPromocao, CancellationToken ct)
     {
@@ -141,28 +122,6 @@ public class PelandoScraperService(
         }
     }
 
-    private async Task ObterProdutoShopee(string linkPromocao, List<Oferta> ofertas, CancellationToken ct)
-    {
-        var infoShopee = await shopeeScraperService.ObterInformacoesCompletasDaShopeeAsync(linkPromocao, ct);
-        if (infoShopee.IsValid)
-        {
-            var ofertaShopee = new Oferta
-            {
-                Id = Guid.NewGuid(),
-                Fonte = "Pelando",
-                Titulo = infoShopee.Titulo,
-                Link = infoShopee.Link,
-                ImagemUrl = infoShopee.ImagemUrl,
-                PrecoAtual = infoShopee.PrecoAtual,
-                PrecoAnterior = infoShopee.PrecoAnterior,
-                DescontoPercentual = CalcularPercentual(infoShopee.PrecoAtual, infoShopee.PrecoAnterior),
-                PublicadoEm = DateTime.UtcNow
-            };
-
-            ofertas.Add(ofertaShopee);
-        }
-    }
-
     private static bool EhLojaPermitida((string NomeLoja, string UrlLoja) infoLoja)
     {
         if (string.IsNullOrEmpty(infoLoja.NomeLoja) && string.IsNullOrEmpty(infoLoja.UrlLoja)) return false;
@@ -175,44 +134,6 @@ public class PelandoScraperService(
                              (infoLoja.UrlLoja.Contains("amazon.") || infoLoja.UrlLoja.Contains("shopee."));
 
         return ehNomePermitido || ehUrlPermitida;
-    }
-    
-    private static int? CalcularPercentual(string precoAtual, string precoAnterior)
-    {
-        if (string.IsNullOrEmpty(precoAnterior) || string.IsNullOrEmpty(precoAtual))
-            return null;
-
-        var valorAtual = ExtrairValorDecimal(precoAtual);
-        var valorAnterior = ExtrairValorDecimal(precoAnterior);
-
-        if (!valorAtual.HasValue || !valorAnterior.HasValue || valorAnterior <= 0)
-            return null;
-
-        var desconto = (int)(((valorAnterior.Value - valorAtual.Value) * 100) / valorAnterior.Value);
-        return desconto;
-    }
-
-    private static decimal? ExtrairValorDecimal(string preco)
-    {
-        if (string.IsNullOrWhiteSpace(preco)) return null;
-        
-        var precoLimpo = preco.Replace("R$", "").Replace(" ", "").Trim();
-        
-        // Se tem vírgula, é formato brasileiro (pontos são separadores de milhares)
-        if (precoLimpo.Contains(','))
-        {
-            var partes = precoLimpo.Split(',');
-            if (partes.Length == 2 && partes[1].Length == 2)
-            {
-                var parteInteira = partes[0].Replace(".", "");
-                var centavos = partes[1];
-                
-                if (decimal.TryParse($"{parteInteira}.{centavos}", System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var valor))
-                    return valor;
-            }
-        }
-        
-        return null;
     }
 
     private const string SeletorBotaoLoja = "//a[contains(@class,'store-link-button')]";

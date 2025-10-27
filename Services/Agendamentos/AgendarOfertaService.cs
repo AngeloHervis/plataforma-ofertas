@@ -13,14 +13,15 @@ public class AgendarOfertaService(IOfertaAgendadaRepository repo, IAgendarEnvioW
     {
         var entidade = new OfertaAgendada
         {
-            Titulo = request.CamposEditados.Titulo,
-            PrecoAtual = request.CamposEditados.PrecoAtual,
-            PrecoAnterior = request.CamposEditados.PrecoAnterior,
-            
-            Link = request.CamposEditados.Link,
-            ImagemUrl = request.CamposEditados.ImagemUrl,
+            Titulo = request.Titulo,
+            PrecoAtual = request.PrecoAtual,
+            PrecoAnterior = request.PrecoAnterior,
+            Link = request.Link,
+            ImagemUrl = request.ImagemUrl,
             DataHoraEnvio = request.DataHoraAgendamento,
             Enviada = false,
+            PorcentagemComissao = request.PorcentagemComissao,
+            Cta = request.CtaPersonalizado,
             CriadoEm = DateTime.UtcNow
         };
 

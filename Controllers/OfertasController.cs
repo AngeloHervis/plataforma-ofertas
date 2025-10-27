@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using plataforma.ofertas._Base;
 using plataforma.ofertas.Dto.Constantes;
 using plataforma.ofertas.Dto.Ofertas;
+using plataforma.ofertas.Extensions;
+using plataforma.ofertas.Interfaces;
 using plataforma.ofertas.Interfaces.Ofertas;
-using plataforma.ofertas.Interfaces.Scrapers;
 
 namespace plataforma.ofertas.Controllers;
 
@@ -31,7 +31,67 @@ public class OfertasController : ControllerBase
     {
         return await service.ConsultarAsync(cancellationToken).ToResponseResultAsync();
     }
-    
+
+    [HttpPatch("{id:guid}/imagem-principal")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AtualizarImagemPrincipalOferta(
+        [FromRoute] Guid id,
+        [FromBody] AtualizarImagemRequestDto dto,
+        [FromServices] IAtualizarImagemPrincipalOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.AtualizarAsync(id, dto.ImagemUrl, ct).ToResponseResultAsync();
+    }
+
+    [HttpPatch("{id:guid}/atualizar-titulo")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AtualizarTituloOferta(
+        [FromRoute] Guid id,
+        [FromBody] AtualizarTituloRequestDto dto,
+        [FromServices] IAtualizarTituloOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.AtualizarAsync(id, dto.Titulo, ct).ToResponseResultAsync();
+    }
+
+    [HttpPatch("{id:guid}/adicionar-imagem")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AdicionarImagemOferta(
+        [FromRoute] Guid id,
+        [FromBody] AtualizarImagemRequestDto dto,
+        [FromServices] IAdicionarImagemOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.AdicionarAsync(id, dto.ImagemUrl, ct).ToResponseResultAsync();
+    }
+
+    [HttpPatch("{id:guid}/remover-imagem")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RemoverImagemOferta(
+        [FromRoute] Guid id,
+        [FromBody] AtualizarImagemRequestDto dto,
+        [FromServices] IRemoverImagemOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.RemoverAsync(id, dto.ImagemUrl, ct).ToResponseResultAsync();
+    }
+
+    [HttpPatch("{id:guid}/comissao")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AtualizarComissaoOferta(
+        [FromRoute] Guid id,
+        [FromBody] AtualizarComissaoRequestDto dto,
+        [FromServices] IAtualizarComissaoOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.AtualizarAsync(id, dto.PorcentagemComissao, ct).ToResponseResultAsync();
+    }
+
     /// <summary>
     /// Retorna os detalhes de uma oferta específica
     /// </summary>
@@ -63,5 +123,28 @@ public class OfertasController : ControllerBase
     {
         var result = await service.GerarAsync(request, ct);
         return Ok(result);
+    }
+
+    [HttpDelete("remover/{id:guid}")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeletarOferta(
+        [FromRoute] Guid id,
+        [FromServices] IDeletarOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.DeletarAsync(id, ct).ToResponseResultAsync();
+    }
+
+    [HttpPost("scraper-api")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(OfertaDetalheDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ObterDetalhesOfertaViaScraperApi(
+        [FromQuery] string url,
+        [FromServices] IScraperApiService service,
+        CancellationToken ct)
+    {
+        var oferta = await service.ObterOfertaAmazonAsync(url, ct);
+        return Ok(oferta);
     }
 }

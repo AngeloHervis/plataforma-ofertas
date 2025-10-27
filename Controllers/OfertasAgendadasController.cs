@@ -2,6 +2,7 @@
 using plataforma.ofertas._Base;
 using plataforma.ofertas.Dto.Constantes;
 using plataforma.ofertas.Dto.Ofertas;
+using plataforma.ofertas.Extensions;
 using plataforma.ofertas.Interfaces.Agendamentos;
 
 namespace plataforma.ofertas.Controllers;

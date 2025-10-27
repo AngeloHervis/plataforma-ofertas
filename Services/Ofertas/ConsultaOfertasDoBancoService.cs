@@ -10,8 +10,7 @@ public class ConsultaOfertasDoBancoService(IOfertaRepository repo) : IConsultaOf
 {
     public async Task<CommandResult<List<OfertaResumoDto>>> ConsultarAsync(CancellationToken ct)
     {
-        const int limite = 20;
-        var ofertas = await repo.ObterRecentesAsync(limite, ct);
+        var ofertas = await repo.ObterRecentesAsync(ct);
 
         if (ofertas == null || ofertas.Count == 0)
             return CommandResult<List<OfertaResumoDto>>.NotFound(MensagensErro.NenhumaOfertaEncontrada);
@@ -23,8 +22,10 @@ public class ConsultaOfertasDoBancoService(IOfertaRepository repo) : IConsultaOf
                 Fonte = o.Fonte,
                 Titulo = o.Titulo,
                 Preco = o.PrecoAtual,
+                PrecoAnterior = o.PrecoAnterior,
                 Link = o.Link,
-                ImagemUrl = o.ImagemUrl
+                ImagemUrl = o.ImagemUrlPrincipal,
+                PorcentagemComissao = o.PorcentagemComissao
             })
             .ToList();
 

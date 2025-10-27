@@ -8,7 +8,6 @@ namespace plataforma.ofertas.Services.Jobs;
 public class AtualizarOfertasJob(
     IPelandoScraperService pelando,
     IPromobitScraperService promobit,
-    IMercadoLivreScraperService meli,
     ILogger<AtualizarOfertasJob> logger,
     IOfertaRepository repo
 ) : IRunnableService
@@ -21,9 +20,7 @@ public class AtualizarOfertasJob(
 
         var resultados = await Task.WhenAll(
             pelando.ScrapePelandoAsync(ct),
-            promobit.ScrapePromobitAsync(ct),
-            meli.ObterInformacoesCompletasListaMercadoLivreAsync(ct)
-        );
+            promobit.ScrapePromobitAsync(ct));
 
         logger.LogInformation("Scraping concluído. Buscando links existentes...");
 

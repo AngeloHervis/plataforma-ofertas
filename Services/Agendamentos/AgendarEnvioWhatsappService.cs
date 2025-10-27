@@ -20,62 +20,25 @@ public sealed class AgendarEnvioWhatsappService(ISendFlowActionsClient client) :
 
     private static string MontarCaption(OfertaAgendada oferta)
     {
-        var frasesAbertura = new[]
-        {
-            "🔥 Achado do dia!",
-            "💥 Olha essa oferta absurda!",
-            "🚨 Promoção relâmpago detectada!",
-            "🤑 Preço baixou demais!",
-            "🎯 Oferta certeira pra você!",
-            "💣 Tá quase de graça!",
-            "🧨 Achado imperdível!",
-            "📉 Caiu o preço!",
-            "⚡ Não dura muito tempo!",
-            "🏷️ Desconto real oficial!",
-            "💰 Economize agora!",
-            "🤯 Inacreditável esse valor!",
-            "📦 Últimas unidades com desconto!",
-            "💎 Achado premium!",
-            "🚀 Aproveita antes que acabe!",
-            "🔥 Tá voando das prateleiras!",
-            "💸 Promoção que vale ouro!",
-            "🏆 Oferta destaque do dia!",
-            "🎁 Desconto escondido revelado!",
-            "📲 Clique antes que suba o preço!",
-            "🧠 Inteligente é quem aproveita!",
-            "😱 Olha o preço disso!",
-            "💥 Explosão de descontos!",
-            "📢 Promo boa a gente compartilha!",
-            "🎯 Certeiro pra quem ama economia!",
-            "📉 Baixou de novo!",
-            "💥 Oferta que não dá pra ignorar!",
-            "🚨 Última chamada!",
-            "🛒 Corre garantir o seu!",
-            "🔥 Queima de estoque!"
-        };
-        var random = new Random();
-        var fraseEscolhida = frasesAbertura[random.Next(frasesAbertura.Length)];
-
         var linhasPreco = ValidarPrecosMensagem(oferta);
 
         var captionLines = new List<string>
         {
-            $"*{fraseEscolhida}*",
+            $"*{oferta.Cta}*",
             "",
-            $"🔖 {oferta.Titulo}"
+            $"_{oferta.Titulo}_"
         };
 
         captionLines.AddRange(linhasPreco);
 
-        captionLines.AddRange(new[]
+        if (!string.IsNullOrWhiteSpace(oferta.Link))
         {
-            "",
-            !string.IsNullOrWhiteSpace(oferta.Link) ? $"🔗 {oferta.Link}" : null,
-            "",
-            "_Compartilhe com alguém que vai gostar!_"
-        });
+            captionLines.Add("");
+            captionLines.Add("👇 Válido somente aqui:");
+            captionLines.Add(oferta.Link);
+        }
 
-        return string.Join("\n", captionLines.Where(l => !string.IsNullOrWhiteSpace(l)));
+        return string.Join("\n", captionLines);
     }
 
     private static List<string> ValidarPrecosMensagem(OfertaAgendada oferta)

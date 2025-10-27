@@ -9,8 +9,8 @@ namespace plataforma.ofertas.Repositories;
 public class OfertaRepository(SupabaseContext context) : IOfertaRepository
 {
     private readonly Client _client = context.Client;
-    
-    public async Task<Guid>CadastrarAsync(Oferta oferta, CancellationToken ct)
+
+    public async Task<Guid> CadastrarAsync(Oferta oferta, CancellationToken ct)
     {
         var response = await _client.From<Oferta>().Insert(oferta, cancellationToken: ct);
         return response.Models.First().Id;
@@ -29,12 +29,11 @@ public class OfertaRepository(SupabaseContext context) : IOfertaRepository
         await _client.From<Oferta>().Upsert(ofertasUnicas, cancellationToken: ct);
     }
 
-    public async Task<List<Oferta>> ObterRecentesAsync(int limite, CancellationToken ct)
+    public async Task<List<Oferta>> ObterRecentesAsync(CancellationToken ct)
     {
         var response = await _client
             .From<Oferta>()
             .Order("publicado_em", Constants.Ordering.Descending)
-            .Limit(limite)
             .Get(ct);
 
         return response.Models;
@@ -60,11 +59,21 @@ public class OfertaRepository(SupabaseContext context) : IOfertaRepository
         return response.Models.Select(o => o.Link).ToList();
     }
 
-    public async Task RemoverAsync(Guid id, CancellationToken ct)
+    public async Task<bool> DeletarAsync(Guid id, CancellationToken ct)
     {
         await _client
             .From<Oferta>()
-            .Filter("id", Constants.Operator.Equals, id)
+            .Filter("id", Constants.Operator.Equals, id.ToString())
             .Delete(cancellationToken: ct);
+
+        return true;
+    }
+    
+    public async Task AtualizarAsync(Oferta oferta, CancellationToken ct)
+    {
+        await _client
+            .From<Oferta>()
+            .Where(o => o.Id == oferta.Id)
+            .Update(oferta, cancellationToken: ct);
     }
 }

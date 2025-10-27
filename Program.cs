@@ -2,12 +2,15 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using plataforma.ofertas.Dto.Agendamentos;
+using plataforma.ofertas.Interfaces;
 using plataforma.ofertas.Interfaces.Agendamentos;
+using plataforma.ofertas.Interfaces.CTAs;
 using plataforma.ofertas.Interfaces.Jobs;
 using plataforma.ofertas.Interfaces.Ofertas;
 using plataforma.ofertas.Interfaces.Scrapers;
 using plataforma.ofertas.Repositories;
 using plataforma.ofertas.Services.Agendamentos;
+using plataforma.ofertas.Services.CTAs;
 using plataforma.ofertas.Services.Jobs;
 using plataforma.ofertas.Services.Ofertas;
 using plataforma.ofertas.Services.Scrapers;
@@ -75,27 +78,19 @@ builder.Services.AddSwaggerGen(c =>
     c.CustomSchemaIds(x => x.FullName);
 });
 
-builder.Services.Configure<List<CronJobConfig>>(builder.Configuration.GetSection("CronJobs"));
 
-builder.Services.AddSingleton<SupabaseContext>();
+
+// Repositories
+builder.Services.AddScoped<IOfertaAgendadaRepository, OfertaAgendadaRepository>();
 builder.Services.AddScoped<IOfertaRepository, OfertaRepository>();
+builder.Services.AddScoped<ICtaRepository, CtaRepository>();
 
+// Configs
+builder.Services.Configure<List<CronJobConfig>>(builder.Configuration.GetSection("CronJobs"));
+builder.Services.AddSingleton<SupabaseContext>();
 builder.Services.AddScoped<IRunnableService, AtualizarOfertasJob>();
-
 builder.Services.AddSingleton<IJobRegistry, JobRegistry>();
 builder.Services.AddHostedService<CronWorker>();
-
-builder.Services.AddScoped<IConsultaOfertasDoBancoService, ConsultaOfertasDoBancoService>();
-
-builder.Services.AddScoped<IOfertaAgendadaRepository, OfertaAgendadaRepository>();
-
-builder.Services.AddScoped<IAgendarOfertaService, AgendarOfertaService>();
-builder.Services.AddScoped<IListarOfertasAgendadasService, ListarOfertasAgendadasService>();
-builder.Services.AddScoped<IObterOfertaAgendadaDetalheService, ObterOfertaAgendadaDetalheService>();
-builder.Services.AddScoped<IConsultaOfertaDetalheService, ConsultaOfertaDetalheService>();
-builder.Services.AddScoped<IGerarLinkAfiliadoService, GerarLinkAfiliadoService>();
-builder.Services.AddScoped<IAgendarEnvioWhatsappService, AgendarEnvioWhatsappService>();
-
 
 builder.Services.AddHttpClient<ISendFlowActionsClient, SendFlowActionsClient>((sp, http) =>
     {
@@ -105,11 +100,28 @@ builder.Services.AddHttpClient<ISendFlowActionsClient, SendFlowActionsClient>((s
     })
     .SetHandlerLifetime(TimeSpan.FromMinutes(10));
 
+// Services
 builder.Services.AddScoped<IAmazonScraperService, AmazonScraperService>();
 builder.Services.AddScoped<IShopeeScraperService, ShopeeScraperService>();
 builder.Services.AddScoped<IMercadoLivreScraperService, MercadoLivreScraperService>();
+builder.Services.AddScoped<IConsultaOfertasDoBancoService, ConsultaOfertasDoBancoService>();
+builder.Services.AddScoped<IAgendarOfertaService, AgendarOfertaService>();
+builder.Services.AddScoped<IScraperApiService, ScraperApiService>();
+builder.Services.AddScoped<IListarOfertasAgendadasService, ListarOfertasAgendadasService>();
+builder.Services.AddScoped<IObterOfertaAgendadaDetalheService, ObterOfertaAgendadaDetalheService>();
+builder.Services.AddScoped<IConsultaOfertaDetalheService, ConsultaOfertaDetalheService>();
+builder.Services.AddScoped<IGerarLinkAfiliadoService, GerarLinkAfiliadoService>();
+builder.Services.AddScoped<IAgendarEnvioWhatsappService, AgendarEnvioWhatsappService>();
+builder.Services.AddScoped<IAtualizarImagemPrincipalOfertaService, AtualizarImagemPrincipalOfertaService>();
+builder.Services.AddScoped<IDeletarOfertaService, DeletarOfertaService>();
+builder.Services.AddScoped<IAdicionarImagemOfertaService, AdicionarImagemOfertaService>();
+builder.Services.AddScoped<IRemoverImagemOfertaService, RemoverImagemOfertaService>();
+builder.Services.AddScoped<IAtualizarComissaoOfertaService, AtualizarComissaoOfertaService>();
+builder.Services.AddScoped<IAtualizarTituloOfertaService, AtualizarTituloOfertaService>();
+builder.Services.AddScoped<IConsultaCtasService, ConsultaCtasService>();
 builder.Services.AddHttpClient<IPelandoScraperService, PelandoScraperService>();
 builder.Services.AddHttpClient<IPromobitScraperService, PromobitScraperService>();
+
 
 builder.Services.AddLogging(logging =>
 {
