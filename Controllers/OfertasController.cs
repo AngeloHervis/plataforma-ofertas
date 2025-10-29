@@ -31,7 +31,7 @@ public class OfertasController : ControllerBase
     {
         return await service.ConsultarAsync(cancellationToken).ToResponseResultAsync();
     }
-    
+
     [HttpPatch("{id:guid}")]
     [Produces(TiposRequisicaoERetorno.JsonText)]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
@@ -145,5 +145,16 @@ public class OfertasController : ControllerBase
         CancellationToken ct)
     {
         return await service.DeletarAsync(id, ct).ToResponseResultAsync();
+    }
+
+    [HttpPost("{id:guid}/renovar")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RenovarOferta(
+        [FromRoute] Guid id,
+        [FromServices] IRenovarOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.RenovarOfertaAsync(id, ct).ToResponseResultAsync();
     }
 }

@@ -32,7 +32,7 @@ public class AmazonScraperService(IScraperApiService scraperApiService) : IAmazo
             return url;
 
         var tag = "beloto-20";
-        var match = Regex.Match(url, @"(https://www\.amazon\.com\.br/[^/]+/dp/[A-Za-z0-9]+)");
+        var match = Regex.Match(url, @"(https://www\.amazon\.com\.br/dp/[A-Za-z0-9]+)");
         if (match.Success)
             url = match.Groups[1].Value;
 

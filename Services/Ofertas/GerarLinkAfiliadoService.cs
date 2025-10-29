@@ -15,8 +15,6 @@ public class GerarLinkAfiliadoService(
     ILogger<GerarLinkAfiliadoService> logger
 ) : IGerarLinkAfiliadoService
 {
-    private const string Fonte = "Usuario";
-
     public async Task<CommandResult<OfertaDetalheDto>> GerarAsync(GerarLinkAfiliadoRequestDto request, CancellationToken ct)
     {
         logger.LogInformation("Iniciando geração de link afiliado para tipo: {TipoLink}", request.TipoLink);
@@ -24,10 +22,10 @@ public class GerarLinkAfiliadoService(
         if (request.TipoLink == "amazon")
         {
             logger.LogInformation("Processando link da Amazon: {Link}", request.Link);
-            var oferta = await amazonScraperService.ObterInformacoesCompletasDaAmazonAsync(request.Link, Fonte, ct);
+            var oferta = await amazonScraperService.ObterInformacoesCompletasDaAmazonAsync(request.Link, "Amazon", ct);
             var dto = new OfertaDetalheDto
             {
-                Fonte = Fonte,
+                Fonte = "Amazon",
                 Titulo = oferta.Titulo,
                 PrecoAtual = oferta.PrecoAtual,
                 PrecoAnterior = oferta.PrecoAnterior,

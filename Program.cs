@@ -107,6 +107,7 @@ builder.Services.AddScoped<IDeletarOfertaService, DeletarOfertaService>();
 builder.Services.AddScoped<IAtualizarOfertaService, AtualizarOfertaService>();
 builder.Services.AddScoped<IDeletarCtaService, DeletarCtaService>();
 builder.Services.AddScoped<ICriarCtaService, CriarCtaService>();
+builder.Services.AddScoped<IRenovarOfertaService, RenovarOfertaService>();
 builder.Services.AddScoped<IAdicionarImagemOfertaService, AdicionarImagemOfertaService>();
 builder.Services.AddScoped<IRemoverImagemOfertaService, RemoverImagemOfertaService>();
 builder.Services.AddScoped<IAtualizarComissaoOfertaService, AtualizarComissaoOfertaService>();
