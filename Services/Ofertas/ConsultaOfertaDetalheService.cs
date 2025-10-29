@@ -24,7 +24,8 @@ public class ConsultaOfertaDetalheService(IOfertaRepository repo) : IConsultaOfe
             Link = oferta.Link,
             ImagensUrl = HelpersExtensions.ObterListaImagens(oferta.ImagensUrl, oferta),
             ImagemUrlPrincipal = oferta.ImagemUrlPrincipal,
-            PublicadoEm = oferta.PublicadoEm
+            PublicadoEm = oferta.PublicadoEm,
+            PorcentagemComissao = oferta.PorcentagemComissao
         };
         return CommandResult<OfertaDetalheDto>.Success(dto);
     }

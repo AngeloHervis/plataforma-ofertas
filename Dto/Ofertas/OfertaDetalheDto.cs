@@ -11,4 +11,5 @@ public record OfertaDetalheDto
     public List<string> ImagensUrl { get; init; }
     public string ImagemUrlPrincipal { get; init; }
     public DateTime? PublicadoEm { get; init; }
+    public int? PorcentagemComissao { get; init; }
 }

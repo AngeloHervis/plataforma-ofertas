@@ -12,7 +12,7 @@ public class ScraperApiService : IScraperApiService
         try
         {
             var urlScraperApi =
-                $"https://api.scraperapi.com/?api_key=ac361cfaccb03eb145cbce493dc0ecba&url={Uri.EscapeDataString(url)}&output_format=markdown&device_type=desktop&country_code=br";
+                $"https://api.scraperapi.com/?api_key=96acec1b4475a827bf8a0e6e0fd6af73&url={Uri.EscapeDataString(url)}&output_format=markdown&device_type=desktop&country_code=br";
             using var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(urlScraperApi, ct);
 
