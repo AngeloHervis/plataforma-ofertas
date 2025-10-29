@@ -1,4 +1,5 @@
-﻿using plataforma.ofertas.Dto.Ofertas;
+﻿using plataforma.ofertas._Base;
+using plataforma.ofertas.Dto.Ofertas;
 using plataforma.ofertas.Extensions;
 using plataforma.ofertas.Interfaces.Ofertas;
 using plataforma.ofertas.Interfaces.Scrapers;
@@ -16,7 +17,7 @@ public class GerarLinkAfiliadoService(
 {
     private const string Fonte = "Usuario";
 
-    public async Task<OfertaDetalheDto> GerarAsync(GerarLinkAfiliadoRequestDto request, CancellationToken ct)
+    public async Task<CommandResult<OfertaDetalheDto>> GerarAsync(GerarLinkAfiliadoRequestDto request, CancellationToken ct)
     {
         logger.LogInformation("Iniciando geração de link afiliado para tipo: {TipoLink}", request.TipoLink);
 
@@ -39,7 +40,7 @@ public class GerarLinkAfiliadoService(
             {
                 logger.LogInformation("Oferta da Amazon cadastrada com sucesso. Id: {Id}", id);
                 dto.Id = id;
-                return dto;
+                return CommandResult<OfertaDetalheDto>.Success(dto);
             }
 
             logger.LogWarning("Falha ao cadastrar oferta da Amazon.");

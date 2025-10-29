@@ -16,10 +16,11 @@ public class AgendarOfertaService(IOfertaAgendadaRepository repo, IAgendarEnvioW
             Titulo = request.Titulo,
             PrecoAtual = request.PrecoAtual,
             PrecoAnterior = request.PrecoAnterior,
+            Fonte = request.Fonte,
             Link = request.Link,
             ImagemUrl = request.ImagemUrl,
             DataHoraEnvio = request.DataHoraAgendamento,
-            Status = "Pendente",
+            Status = "pendente",
             PorcentagemComissao = request.PorcentagemComissao,
             Cta = request.CtaPersonalizado,
             CriadoEm = DateTime.UtcNow
@@ -33,6 +34,10 @@ public class AgendarOfertaService(IOfertaAgendadaRepository repo, IAgendarEnvioW
 
         if (!agendamentoConcluido)
             return CommandResult<OfertaAgendadaDetalheDto>.InternalError("Falha ao criar agendamento no sendflow.");
+        
+        oferta.Status = "enviada";
+        oferta.AtualizadoEm = DateTime.UtcNow;
+        await repo.AtualizarAsync(oferta, ct);
 
         return CommandResult<OfertaAgendadaDetalheDto>.Success(new OfertaAgendadaDetalheDto
         {
@@ -42,10 +47,12 @@ public class AgendarOfertaService(IOfertaAgendadaRepository repo, IAgendarEnvioW
             PrecoAnterior = oferta.PrecoAnterior,
             Link = oferta.Link,
             ImagemUrl = oferta.ImagemUrl,
-            DataHoraEnvio = oferta.DataHoraEnvio,
-            Status = "Pendente",
-            CriadoEm = oferta.CriadoEm,
-            AtualizadoEm = oferta.AtualizadoEm
+            DataHoraAgendamento = oferta.DataHoraEnvio,
+            Status = oferta.Status,
+            PorcentagemComissao = oferta.PorcentagemComissao,
+            CtaPersonalizado = oferta.Cta,
+            Fonte = oferta.Fonte,
+            ValorComissao = oferta.PorcentagemComissao
         });
     }
 }

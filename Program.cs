@@ -1,17 +1,16 @@
 using System.Net.Http.Headers;
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using plataforma.ofertas.Dto.Agendamentos;
 using plataforma.ofertas.Interfaces;
 using plataforma.ofertas.Interfaces.Agendamentos;
 using plataforma.ofertas.Interfaces.CTAs;
-using plataforma.ofertas.Interfaces.Jobs;
 using plataforma.ofertas.Interfaces.Ofertas;
 using plataforma.ofertas.Interfaces.Scrapers;
 using plataforma.ofertas.Repositories;
 using plataforma.ofertas.Services.Agendamentos;
 using plataforma.ofertas.Services.CTAs;
-using plataforma.ofertas.Services.Jobs;
 using plataforma.ofertas.Services.Ofertas;
 using plataforma.ofertas.Services.Scrapers;
 using plataforma.ofertas.Storage;
@@ -30,10 +29,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers(options => { options.ReturnHttpNotAcceptable = false; })
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
-    });
+    .AddJsonOptions(options => { options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase; });
 
 
 builder.Services.AddEndpointsApiExplorer();
@@ -79,18 +75,13 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-
 // Repositories
 builder.Services.AddScoped<IOfertaAgendadaRepository, OfertaAgendadaRepository>();
 builder.Services.AddScoped<IOfertaRepository, OfertaRepository>();
 builder.Services.AddScoped<ICtaRepository, CtaRepository>();
 
 // Configs
-builder.Services.Configure<List<CronJobConfig>>(builder.Configuration.GetSection("CronJobs"));
 builder.Services.AddSingleton<SupabaseContext>();
-builder.Services.AddScoped<IRunnableService, AtualizarOfertasJob>();
-builder.Services.AddSingleton<IJobRegistry, JobRegistry>();
-builder.Services.AddHostedService<CronWorker>();
 
 builder.Services.AddHttpClient<ISendFlowActionsClient, SendFlowActionsClient>((sp, http) =>
     {
@@ -113,6 +104,9 @@ builder.Services.AddScoped<IGerarLinkAfiliadoService, GerarLinkAfiliadoService>(
 builder.Services.AddScoped<IAgendarEnvioWhatsappService, AgendarEnvioWhatsappService>();
 builder.Services.AddScoped<IAtualizarImagemPrincipalOfertaService, AtualizarImagemPrincipalOfertaService>();
 builder.Services.AddScoped<IDeletarOfertaService, DeletarOfertaService>();
+builder.Services.AddScoped<IAtualizarOfertaService, AtualizarOfertaService>();
+builder.Services.AddScoped<IDeletarCtaService, DeletarCtaService>();
+builder.Services.AddScoped<ICriarCtaService, CriarCtaService>();
 builder.Services.AddScoped<IAdicionarImagemOfertaService, AdicionarImagemOfertaService>();
 builder.Services.AddScoped<IRemoverImagemOfertaService, RemoverImagemOfertaService>();
 builder.Services.AddScoped<IAtualizarComissaoOfertaService, AtualizarComissaoOfertaService>();

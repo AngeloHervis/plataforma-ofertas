@@ -20,15 +20,15 @@ public sealed class AgendarEnvioWhatsappService(ISendFlowActionsClient client) :
 
     private static string MontarCaption(OfertaAgendada oferta)
     {
-        var linhasPreco = ValidarPrecosMensagem(oferta);
-
         var captionLines = new List<string>
         {
             $"*{oferta.Cta}*",
             "",
-            $"_{oferta.Titulo}_"
+            $"_{oferta.Titulo}_",
+            ""
         };
 
+        var linhasPreco = ValidarPrecosMensagem(oferta);
         captionLines.AddRange(linhasPreco);
 
         if (!string.IsNullOrWhiteSpace(oferta.Link))
@@ -43,13 +43,14 @@ public sealed class AgendarEnvioWhatsappService(ISendFlowActionsClient client) :
 
     private static List<string> ValidarPrecosMensagem(OfertaAgendada oferta)
     {
+        var linhasPreco = new List<string>();
         var temPrecoAnterior = !string.IsNullOrWhiteSpace(oferta.PrecoAnterior);
 
-        var linhasPreco = new List<string>();
         if (temPrecoAnterior)
         {
-            linhasPreco.Add($"De: ~{oferta.PrecoAnterior}~");
-            linhasPreco.Add($"Por: *{oferta.PrecoAtual}*");
+            linhasPreco.Add($"~De: {oferta.PrecoAnterior}~");
+            linhasPreco.Add("");
+            linhasPreco.Add($"*Por: {oferta.PrecoAtual}*");
             return linhasPreco;
         }
 

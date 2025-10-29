@@ -15,7 +15,7 @@ public class ListarOfertasAgendadasService(IOfertaAgendadaRepository repo) : ILi
             .OrderBy(i => i.DataHoraEnvio)
             .Select(i => new OfertaAgendadaResumoDto
             {
-                OfertaId = i.Id,
+                Id = i.Id,
                 PrecoAnterior = i.PrecoAnterior,
                 Link = i.Link,
                 PorcentagemComissao = i.PorcentagemComissao,
@@ -23,7 +23,9 @@ public class ListarOfertasAgendadasService(IOfertaAgendadaRepository repo) : ILi
                 PrecoAtual = i.PrecoAtual,
                 ImagemUrl = i.ImagemUrl,
                 DataHoraAgendamento = i.DataHoraEnvio,
-                Status = "Pendente",
+                Status = i.Status,
+                CtaPersonalizado = i.Cta,
+                Fonte = i.Fonte
             })
             .ToList();
 

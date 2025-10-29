@@ -31,6 +31,18 @@ public class OfertasController : ControllerBase
     {
         return await service.ConsultarAsync(cancellationToken).ToResponseResultAsync();
     }
+    
+    [HttpPatch("{id:guid}")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    public async Task<IActionResult> AtualizarOferta(
+        [FromRoute] Guid id,
+        [FromBody] AtualizarOfertaRequestDto dto,
+        [FromServices] IAtualizarOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.AtualizarAsync(id, dto, ct).ToResponseResultAsync();
+    }
 
     [HttpPatch("{id:guid}/imagem-principal")]
     [Produces(TiposRequisicaoERetorno.JsonText)]
@@ -121,8 +133,7 @@ public class OfertasController : ControllerBase
         [FromServices] IGerarLinkAfiliadoService service,
         CancellationToken ct)
     {
-        var result = await service.GerarAsync(request, ct);
-        return Ok(result);
+        return await service.GerarAsync(request, ct).ToResponseResultAsync();
     }
 
     [HttpDelete("remover/{id:guid}")]

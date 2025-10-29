@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using plataforma.ofertas._Base;
 using plataforma.ofertas.Dto.Constantes;
 using plataforma.ofertas.Dto.Ofertas;
 using plataforma.ofertas.Extensions;

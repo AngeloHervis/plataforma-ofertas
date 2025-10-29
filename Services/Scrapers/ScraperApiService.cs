@@ -51,7 +51,8 @@ public class ScraperApiService : IScraperApiService
             if (string.IsNullOrEmpty(precoAtual) && todosPrecos.Count > 0)
                 precoAtual = todosPrecos[0];
 
-            var (listaUrlsAntesDePrecoAnterior, titulo) = ExtrairImagensETitulo(responseBody);
+            var (listaUrlsAntesDePrecoAnterior, titulo) =
+                ExtrairImagensETitulo(responseBody, !string.IsNullOrEmpty(precoAnterior));
             var listaUrlsCorrigidas = listaUrlsAntesDePrecoAnterior
                 .Where((urlImagem, index) => !(index == 0 && urlImagem.EndsWith(".png")))
                 .Select(urlImagem => urlImagem.EndsWith("..jpg") ? urlImagem.Replace("..jpg", ".jpg") : urlImagem)
@@ -67,8 +68,8 @@ public class ScraperApiService : IScraperApiService
                 Id = Guid.NewGuid(),
                 Fonte = fonte,
                 Titulo = titulo,
-                PrecoAtual = precoAtual,
-                PrecoAnterior = precoAnterior,
+                PrecoAtual = precoAtual.PadronizarPreco(),
+                PrecoAnterior = precoAnterior.PadronizarPreco(),
                 DescontoPercentual = descontoPercentual,
                 Link = url,
                 ImagensUrl = HelpersExtensions.ConverterListaParaString(listaUrlsAntesDePrecoAnterior),
@@ -83,7 +84,7 @@ public class ScraperApiService : IScraperApiService
         }
     }
 
-    private static (List<string>, string) ExtrairImagensETitulo(string responseBody)
+    private static (List<string>, string) ExtrairImagensETitulo(string responseBody, bool temPrecoAnterior)
     {
         var listaValoresOuImagens = new List<string>();
         var regexValor = new Regex(@"R\$\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?");
@@ -94,72 +95,39 @@ public class ScraperApiService : IScraperApiService
         var titulo = "Produto";
         var linhaAnterior = string.Empty;
 
-        for (var i = 0; i < linhas.Length; i++)
+        foreach (var linha in linhas)
         {
-            var linha = linhas[i];
-
             if (linha.Contains("Para ver este vídeo faça o download") && !string.IsNullOrEmpty(linhaAnterior))
             {
                 var matchTitulo = regexTitulo.Match(linhaAnterior);
                 if (matchTitulo.Success)
-                {
                     titulo = matchTitulo.Groups[0].Value.Trim();
-                }
             }
 
-            var matchValor = regexValor.Match(linha);
-            if (matchValor.Success)
-                listaValoresOuImagens.Add(matchValor.Value);
+            if (regexValor.IsMatch(linha))
+                listaValoresOuImagens.Add(regexValor.Match(linha).Value);
 
-            var matchImagem = regexImagem.Match(linha);
-            if (matchImagem.Success)
-                listaValoresOuImagens.Add(matchImagem.Groups[1].Value);
+            if (regexImagem.IsMatch(linha))
+                listaValoresOuImagens.Add(regexImagem.Match(linha).Groups[1].Value);
 
             linhaAnterior = linha;
         }
 
-        var listaUrlsAntesDePrecoAnterior = new List<string>();
-        var precoAnteriorMatch = Regex.Match(responseBody, @"De:\s*(R\$\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?)");
-        var precoAnterior = precoAnteriorMatch.Success
-            ? precoAnteriorMatch.Groups[1].Value.Replace("De:", "").Trim()
-            : string.Empty;
+        var precoAnterior = Regex.Match(responseBody, @"De:\s*(R\$\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?)")
+            .Groups[1].Value.Replace("De:", "").Trim();
 
-        for (var i = 0; i < listaValoresOuImagens.Count; i++)
-        {
-            if (precoAnterior == listaValoresOuImagens[i])
-            {
-                for (var j = 0; j < i; j++)
-                {
-                    if (listaValoresOuImagens[j].StartsWith("https://"))
-                        listaUrlsAntesDePrecoAnterior.Add(listaValoresOuImagens[j]);
-                }
-            }
-        }
+        var listaUrlsAntesDePrecoAnterior = string.IsNullOrEmpty(precoAnterior)
+            ? listaValoresOuImagens.Where(item => item.StartsWith("https://")).Take(20).ToList()
+            : listaValoresOuImagens.TakeWhile(item => item != precoAnterior)
+                .Where(item => item.StartsWith("https://"))
+                .ToList();
 
         var imagensLimpas = listaUrlsAntesDePrecoAnterior
-            .Select(url => Regex.Replace(url, @"_AC_[^\.]+(?=\.)|\.\.", "")).Distinct()
+            .Select(url => Regex.Replace(url, @"_AC_[^\.]+(?=\.)|\.\.", ""))
+            .Distinct()
             .ToList();
 
         return (imagensLimpas, LimparTitulo(titulo));
-    }
-
-    private string ExtrairTituloDoUrl(string responseBody)
-    {
-        try
-        {
-            var match = Regex.Match(responseBody, @"#\s*Resumo do produto:\s*(.+)");
-            if (match.Success)
-            {
-                var titulo = match.Groups[1].Value.Trim();
-                return titulo;
-            }
-
-            return "Produto";
-        }
-        catch
-        {
-            return "Produto";
-        }
     }
 
     private static string LimparTitulo(string titulo)

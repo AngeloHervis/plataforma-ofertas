@@ -2,7 +2,7 @@
 
 public class OfertaAgendadaResumoDto
 {
-    public Guid OfertaId { get; set; }
+    public Guid Id { get; set; }
     public string Titulo { get; set; }
     public string PrecoAtual { get; set; }
     public string PrecoAnterior { get; set; }
@@ -11,4 +11,6 @@ public class OfertaAgendadaResumoDto
     public string ImagemUrl { get; set; }
     public DateTime DataHoraAgendamento { get; set; }
     public string Status { get; set; }
+    public string CtaPersonalizado { get; set; }
+    public string Fonte { get; set; }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using plataforma.ofertas.Dto.Constantes;
+using plataforma.ofertas.Dto.CTAs;
 using plataforma.ofertas.Extensions;
 using plataforma.ofertas.Interfaces.CTAs;
 
@@ -22,11 +23,34 @@ public class CallToActionController : ControllerBase
     /// <response code="500">Erro interno</response>
     [HttpGet]
     [Produces(TiposRequisicaoERetorno.JsonText)]
-    [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<CtaDetalhesDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ObterCtasAtivas(
         [FromServices] IConsultaCtasService service,
         CancellationToken cancellationToken)
     {
         return await service.ConsultarAsync(cancellationToken).ToResponseResultAsync();
     }
+
+    [HttpDelete("{id:guid}")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeletarCta(
+        [FromServices] IDeletarCtaService service,
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        return await service.DeletarAsync(id, cancellationToken).ToResponseResultAsync();
+    }
+
+    [HttpPost]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> CriarCta(
+        [FromServices] ICriarCtaService service,
+        [FromBody] CriarCtaDto dto,
+        CancellationToken cancellationToken)
+    {        return await service.CriarAsync(dto, cancellationToken).ToResponseResultAsync();   
+
+}
+
 }

@@ -27,16 +27,6 @@ public class OfertaAgendadaRepository(SupabaseContext context) : IOfertaAgendada
         return resp.Models;
     }
 
-    public async Task<OfertaAgendada> ObterPorIdAsync(Guid id, CancellationToken ct)
-    {
-        var resp = await _client
-            .From<OfertaAgendada>()
-            .Filter("id", Constants.Operator.Equals, id.ToString())
-            .Get(ct);
-
-        return resp.Models.FirstOrDefault();
-    }
-
     public async Task AtualizarAsync(OfertaAgendada entidade, CancellationToken ct)
     {
         entidade.AtualizadoEm = DateTime.UtcNow;

@@ -19,6 +19,15 @@ public static class HelpersExtensions
         var desconto = (int)((valorAnterior.Value - valorAtual.Value) * 100 / valorAnterior.Value);
         return desconto;
     }
+    
+    public static string PadronizarPreco(this string preco)
+    {
+        if (string.IsNullOrWhiteSpace(preco))
+            return string.Empty;
+
+        var valor = preco.Replace("R$", "").Replace(" ", "").Trim();
+        return $"R$ {valor}";
+    }
 
     private static decimal? ExtrairValorDecimal(string preco)
     {

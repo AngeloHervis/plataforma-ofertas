@@ -39,6 +39,9 @@ public class OfertaAgendada : BaseModel
     [Column("cta")]
     public string Cta { get; set; }
     
+    [Column("fonte")]
+    public string Fonte { get; set; }
+    
     [Column("porcentagem_comissao")]
     public int? PorcentagemComissao { get; set; }
 }
