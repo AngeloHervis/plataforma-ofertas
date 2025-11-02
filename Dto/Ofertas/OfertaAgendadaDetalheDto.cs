@@ -11,7 +11,10 @@ public class OfertaAgendadaDetalheDto
     public string ImagemUrl { get; set; }
     public DateTime DataHoraAgendamento { get; set; }
     public string Status { get; set; }
+    public Guid CtaId { get; set; }
+    public Guid TemplateId { get; set; }
+    public string Cupom { get; set; }
+    public bool TemCupom { get; set; }
     public int? PorcentagemComissao { get; set; }
     public int? ValorComissao { get; set; }
-    public string CtaPersonalizado { get; set; }
 }

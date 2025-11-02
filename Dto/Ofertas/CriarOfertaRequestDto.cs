@@ -1,16 +1,12 @@
 ﻿namespace plataforma.ofertas.Dto.Ofertas;
 
-public record OfertaDetalheDto 
+public class CriarOfertaRequestDto
 {
-    public Guid Id { get; set; }
-    public string Fonte { get; init; }
     public string Titulo { get; init; }
     public string PrecoAtual { get; init; }
     public string PrecoAnterior { get; init; }
-    public string Link { get; init; }
-    public List<string> ImagensUrl { get; init; }
-    public string ImagemUrlPrincipal { get; init; }
-    public DateTime? PublicadoEm { get; init; }
+    public string LinkProduto { get; init; }
+    public string ImagemUrl { get; init; }
     public int? PorcentagemComissao { get; init; }
     public Guid CtaId { get; init; }
     public Guid TemplateId { get; init; }

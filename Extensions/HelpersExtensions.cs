@@ -60,6 +60,23 @@ public static class HelpersExtensions
         var listaImagens = ConverterStringParaLista(oferta.ImagensUrl);
         return listaImagens.OrderBy(img => img == oferta.ImagemUrlPrincipal ? 0 : 1).ToList();
     }
+    
+    public static string ExtrairFonteDaUrl(string url)
+    {
+        try
+        {
+            if (url.Contains("amazon"))
+                return "Amazon";
+            if (url.Contains("mercadolivre"))
+                return "Mercado Livre";
+
+            return url.Contains("shopee") ? "Shopee" : url;
+        }
+        catch
+        {
+            return "Desconhecido";
+        }
+    }
 
     public static string ConverterListaParaString(List<string> urls)
         => string.Join(",", urls);

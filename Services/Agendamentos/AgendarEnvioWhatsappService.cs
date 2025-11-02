@@ -1,13 +1,21 @@
 ﻿using plataforma.ofertas.Interfaces.Agendamentos;
+using plataforma.ofertas.Interfaces.CTAs;
+using plataforma.ofertas.Interfaces.Templates;
 using plataforma.ofertas.Models;
+using System.Text.RegularExpressions;
+using plataforma.ofertas.Extensions;
 
 namespace plataforma.ofertas.Services.Agendamentos;
 
-public sealed class AgendarEnvioWhatsappService(ISendFlowActionsClient client) : IAgendarEnvioWhatsappService
+public sealed class AgendarEnvioWhatsappService(
+    ISendFlowActionsClient client,
+    ITemplateRepository templateRepository,
+    ICtaRepository ctaRepository
+) : IAgendarEnvioWhatsappService
 {
     public async Task<bool> AgendarImagemAsync(OfertaAgendada oferta, CancellationToken ct)
     {
-        var caption = MontarCaption(oferta);
+        var caption = await MontarCaption(oferta, ct);
         var whenUtc = oferta.DataHoraEnvio.ToUniversalTime();
 
         return await client.ScheduleImageToReleaseAsync(
@@ -18,43 +26,31 @@ public sealed class AgendarEnvioWhatsappService(ISendFlowActionsClient client) :
         );
     }
 
-    private static string MontarCaption(OfertaAgendada oferta)
+    private async Task<string> MontarCaption(OfertaAgendada oferta, CancellationToken ct)
     {
-        var captionLines = new List<string>
-        {
-            $"*{oferta.Cta}*",
-            "",
-            $"_{oferta.Titulo}_",
-            ""
-        };
+        var template = await templateRepository.ObterPorIdAsync(oferta.TemplateId, ct);
+        var cta = await ctaRepository.ObterPorIdAsync(oferta.CtaId, ct);
 
-        var linhasPreco = ValidarPrecosMensagem(oferta);
-        captionLines.AddRange(linhasPreco);
+        if (template == null)
+            throw new InvalidOperationException($"Template com ID {oferta.TemplateId} não encontrado");
 
-        if (!string.IsNullOrWhiteSpace(oferta.Link))
-        {
-            captionLines.Add("");
-            captionLines.Add("👇 Válido somente aqui:");
-            captionLines.Add(oferta.Link);
-        }
+        var caption = SubstituirVariaveisTemplate(template.Conteudo, oferta, cta);
 
-        return string.Join("\n", captionLines);
+        return caption;
     }
 
-    private static List<string> ValidarPrecosMensagem(OfertaAgendada oferta)
+    private static string SubstituirVariaveisTemplate(string templateConteudo, OfertaAgendada oferta, Cta cta)
     {
-        var linhasPreco = new List<string>();
-        var temPrecoAnterior = !string.IsNullOrWhiteSpace(oferta.PrecoAnterior);
+        var caption = templateConteudo;
 
-        if (temPrecoAnterior)
-        {
-            linhasPreco.Add($"~De: {oferta.PrecoAnterior}~");
-            linhasPreco.Add("");
-            linhasPreco.Add($"*Por: {oferta.PrecoAtual}*");
-            return linhasPreco;
-        }
+        caption = Regex.Replace(caption, @"\{\{cta\}\}", cta.Titulo ?? string.Empty, RegexOptions.IgnoreCase);
+        caption = Regex.Replace(caption, @"\{\{titulo\}\}", oferta.Titulo ?? string.Empty, RegexOptions.IgnoreCase);
+        caption = Regex.Replace(caption, @"\{\{preco-anterior\}\}", oferta.PrecoAnterior.PadronizarPreco() ?? string.Empty, RegexOptions.IgnoreCase);
+        caption = Regex.Replace(caption, @"\{\{preco-atual\}\}", oferta.PrecoAtual.PadronizarPreco() ?? string.Empty, RegexOptions.IgnoreCase);
+        caption = Regex.Replace(caption, @"\{\{link\}\}", oferta.Link ?? string.Empty, RegexOptions.IgnoreCase);
+        caption = Regex.Replace(caption, @"\{\{cupom\}\}", oferta.TemCupom ? (oferta.Cupom ?? string.Empty) : "Sem cupom", RegexOptions.IgnoreCase);
+        caption = Regex.Replace(caption, @"\n\s*\n\s*\n", "\n\n");
 
-        linhasPreco.Add($"*{oferta.PrecoAtual}*");
-        return linhasPreco;
+        return caption.Trim();
     }
 }

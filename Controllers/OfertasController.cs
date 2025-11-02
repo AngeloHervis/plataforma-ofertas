@@ -2,7 +2,6 @@
 using plataforma.ofertas.Dto.Constantes;
 using plataforma.ofertas.Dto.Ofertas;
 using plataforma.ofertas.Extensions;
-using plataforma.ofertas.Interfaces;
 using plataforma.ofertas.Interfaces.Ofertas;
 
 namespace plataforma.ofertas.Controllers;
@@ -134,6 +133,28 @@ public class OfertasController : ControllerBase
         CancellationToken ct)
     {
         return await service.GerarAsync(request, ct).ToResponseResultAsync();
+    }
+    
+    [HttpPost("cadastrar")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    public async Task<IActionResult> CadastrarOferta(
+        [FromBody] CriarOfertaRequestDto dto,
+        [FromServices] ICriarOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.CriarAsync(dto, ct).ToResponseResultAsync();
+    }
+    
+    [HttpPost("programar")]
+    [Produces(TiposRequisicaoERetorno.JsonText)]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ProgramarOferta(
+        [FromBody] ProgramarOfertaRequestDto dto,
+        [FromServices] IProgramarOfertaService service,
+        CancellationToken ct)
+    {
+        return await service.ProgramarAsync(dto, ct).ToResponseResultAsync();
     }
 
     [HttpDelete("remover/{id:guid}")]

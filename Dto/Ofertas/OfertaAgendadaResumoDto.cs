@@ -11,6 +11,5 @@ public class OfertaAgendadaResumoDto
     public string ImagemUrl { get; set; }
     public DateTime DataHoraAgendamento { get; set; }
     public string Status { get; set; }
-    public string CtaPersonalizado { get; set; }
     public string Fonte { get; set; }
 }

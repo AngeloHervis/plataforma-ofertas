@@ -2,7 +2,6 @@
 using plataforma.ofertas.Dto.Ofertas;
 using plataforma.ofertas.Extensions;
 using plataforma.ofertas.Interfaces.Ofertas;
-using plataforma.ofertas.Models;
 
 namespace plataforma.ofertas.Services.Ofertas;
 
@@ -25,6 +24,10 @@ public class ConsultaOfertaDetalheService(IOfertaRepository repo) : IConsultaOfe
             ImagensUrl = HelpersExtensions.ObterListaImagens(oferta.ImagensUrl, oferta),
             ImagemUrlPrincipal = oferta.ImagemUrlPrincipal,
             PublicadoEm = oferta.PublicadoEm,
+            CtaId = oferta.CtaId,
+            TemplateId = oferta.TemplateId,
+            Cupom = oferta.Cupom,
+            TemCupom = oferta.TemCupom,
             PorcentagemComissao = oferta.PorcentagemComissao
         };
         return CommandResult<OfertaDetalheDto>.Success(dto);

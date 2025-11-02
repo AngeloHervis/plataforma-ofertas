@@ -21,7 +21,8 @@ public sealed class SendFlowActionsClient(HttpClient http, IOptions<SendFlowOpti
             caption = caption,
             url = imageUrl,
             scheduledTo = scheduledAtUtc.ToUniversalTime().ToString("o"), 
-            chooseSpecificGroups = false,
+            chooseSpecificGroups = true,
+            groupIds = ["120363404829692368"],
             options = new { shippingSpeed = _opts.DefaultShipping }
         };
 

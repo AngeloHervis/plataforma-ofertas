@@ -24,7 +24,6 @@ public class ListarOfertasAgendadasService(IOfertaAgendadaRepository repo) : ILi
                 ImagemUrl = i.ImagemUrl,
                 DataHoraAgendamento = i.DataHoraEnvio,
                 Status = i.Status,
-                CtaPersonalizado = i.Cta,
                 Fonte = i.Fonte
             })
             .ToList();

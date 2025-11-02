@@ -8,10 +8,6 @@ public sealed class SendImageMessageActionRequest
     public string url { get; set; } = default!;
     public string? scheduledTo { get; set; }
     public bool? chooseSpecificGroups { get; set; } = false;
+    public List<string> groupIds { get; set; } = [];
     public object? options { get; set; }
-}
-
-public sealed class ShippingOptions
-{
-    public string shippingSpeed { get; set; } = "slow";
 }

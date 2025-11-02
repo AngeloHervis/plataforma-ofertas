@@ -8,7 +8,10 @@ public class AgendarOfertaRequestDto
     public string PrecoAnterior { get; set; }
     public string Link { get; set; }
     public string ImagemUrl { get; set; }
-    public string CtaPersonalizado { get; set; }
     public int? PorcentagemComissao { get; set; }
     public DateTime DataHoraAgendamento { get; set; }
+    public Guid CtaId { get; set; }
+    public Guid TemplateId { get; set; }
+    public string Cupom { get; set; }
+    public bool TemCupom { get; set; }
 }

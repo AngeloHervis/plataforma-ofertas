@@ -8,11 +8,13 @@ using plataforma.ofertas.Interfaces.Agendamentos;
 using plataforma.ofertas.Interfaces.CTAs;
 using plataforma.ofertas.Interfaces.Ofertas;
 using plataforma.ofertas.Interfaces.Scrapers;
+using plataforma.ofertas.Interfaces.Templates;
 using plataforma.ofertas.Repositories;
 using plataforma.ofertas.Services.Agendamentos;
 using plataforma.ofertas.Services.CTAs;
 using plataforma.ofertas.Services.Ofertas;
 using plataforma.ofertas.Services.Scrapers;
+using plataforma.ofertas.Services.Templates;
 using plataforma.ofertas.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -79,6 +81,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IOfertaAgendadaRepository, OfertaAgendadaRepository>();
 builder.Services.AddScoped<IOfertaRepository, OfertaRepository>();
 builder.Services.AddScoped<ICtaRepository, CtaRepository>();
+builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 
 // Configs
 builder.Services.AddSingleton<SupabaseContext>();
@@ -104,6 +107,7 @@ builder.Services.AddScoped<IGerarLinkAfiliadoService, GerarLinkAfiliadoService>(
 builder.Services.AddScoped<IAgendarEnvioWhatsappService, AgendarEnvioWhatsappService>();
 builder.Services.AddScoped<IAtualizarImagemPrincipalOfertaService, AtualizarImagemPrincipalOfertaService>();
 builder.Services.AddScoped<IDeletarOfertaService, DeletarOfertaService>();
+builder.Services.AddScoped<ICriarOfertaService, CriarOfertaService>();
 builder.Services.AddScoped<IAtualizarOfertaService, AtualizarOfertaService>();
 builder.Services.AddScoped<IDeletarCtaService, DeletarCtaService>();
 builder.Services.AddScoped<ICriarCtaService, CriarCtaService>();
@@ -113,6 +117,10 @@ builder.Services.AddScoped<IRemoverImagemOfertaService, RemoverImagemOfertaServi
 builder.Services.AddScoped<IAtualizarComissaoOfertaService, AtualizarComissaoOfertaService>();
 builder.Services.AddScoped<IAtualizarTituloOfertaService, AtualizarTituloOfertaService>();
 builder.Services.AddScoped<IConsultaCtasService, ConsultaCtasService>();
+builder.Services.AddScoped<IProgramarOfertaService, ProgramarOfertaService>();
+builder.Services.AddScoped<IConsultaTemplatesService, ConsultaTemplatesService>();
+builder.Services.AddScoped<IDeletarTemplateService, DeletarTemplateService>();
+builder.Services.AddScoped<ICriarTemplateService, CriarTemplateService>();
 builder.Services.AddHttpClient<IPelandoScraperService, PelandoScraperService>();
 builder.Services.AddHttpClient<IPromobitScraperService, PromobitScraperService>();
 

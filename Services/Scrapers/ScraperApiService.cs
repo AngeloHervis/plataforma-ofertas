@@ -30,7 +30,7 @@ public class ScraperApiService : IScraperApiService
         }
     }
 
-    private Oferta ExtrairOfertaDeMarkdown(string responseBody, string url, string fonte)
+    private static Oferta ExtrairOfertaDeMarkdown(string responseBody, string url, string fonte)
     {
         try
         {
@@ -52,14 +52,14 @@ public class ScraperApiService : IScraperApiService
                 precoAtual = todosPrecos[0];
 
             var (listaUrlsAntesDePrecoAnterior, titulo) =
-                ExtrairImagensETitulo(responseBody, !string.IsNullOrEmpty(precoAnterior));
+                ExtrairImagensETitulo(responseBody);
             var listaUrlsCorrigidas = listaUrlsAntesDePrecoAnterior
                 .Where((urlImagem, index) => !(index == 0 && urlImagem.EndsWith(".png")))
                 .Select(urlImagem => urlImagem.EndsWith("..jpg") ? urlImagem.Replace("..jpg", ".jpg") : urlImagem)
                 .ToList();
 
             if (string.IsNullOrEmpty(fonte))
-                fonte = ExtrairFonteDaUrl(url);
+                fonte = HelpersExtensions.ExtrairFonteDaUrl(url);
 
             var descontoPercentual = HelpersExtensions.CalcularPercentual(precoAtual, precoAnterior);
 
@@ -84,7 +84,7 @@ public class ScraperApiService : IScraperApiService
         }
     }
 
-    private static (List<string>, string) ExtrairImagensETitulo(string responseBody, bool temPrecoAnterior)
+    private static (List<string>, string) ExtrairImagensETitulo(string responseBody)
     {
         var listaValoresOuImagens = new List<string>();
         var regexValor = new Regex(@"R\$\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?");
@@ -140,23 +140,6 @@ public class ScraperApiService : IScraperApiService
         catch
         {
             return titulo;
-        }
-    }
-
-    private static string ExtrairFonteDaUrl(string url)
-    {
-        try
-        {
-            if (url.Contains("amazon"))
-                return "Amazon";
-            if (url.Contains("mercadolivre"))
-                return "Mercado Livre";
-
-            return url.Contains("shopee") ? "Shopee" : url;
-        }
-        catch
-        {
-            return "Desconhecido";
         }
     }
 }
