@@ -5,13 +5,11 @@ using Microsoft.OpenApi.Models;
 using plataforma.ofertas.Dto.Agendamentos;
 using plataforma.ofertas.Interfaces;
 using plataforma.ofertas.Interfaces.Agendamentos;
-using plataforma.ofertas.Interfaces.CTAs;
 using plataforma.ofertas.Interfaces.Ofertas;
 using plataforma.ofertas.Interfaces.Scrapers;
 using plataforma.ofertas.Interfaces.Templates;
 using plataforma.ofertas.Repositories;
 using plataforma.ofertas.Services.Agendamentos;
-using plataforma.ofertas.Services.CTAs;
 using plataforma.ofertas.Services.Ofertas;
 using plataforma.ofertas.Services.Scrapers;
 using plataforma.ofertas.Services.Templates;
@@ -80,7 +78,6 @@ builder.Services.AddSwaggerGen(c =>
 // Repositories
 builder.Services.AddScoped<IOfertaAgendadaRepository, OfertaAgendadaRepository>();
 builder.Services.AddScoped<IOfertaRepository, OfertaRepository>();
-builder.Services.AddScoped<ICtaRepository, CtaRepository>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 
 // Configs
@@ -109,14 +106,11 @@ builder.Services.AddScoped<IAtualizarImagemPrincipalOfertaService, AtualizarImag
 builder.Services.AddScoped<IDeletarOfertaService, DeletarOfertaService>();
 builder.Services.AddScoped<ICriarOfertaService, CriarOfertaService>();
 builder.Services.AddScoped<IAtualizarOfertaService, AtualizarOfertaService>();
-builder.Services.AddScoped<IDeletarCtaService, DeletarCtaService>();
-builder.Services.AddScoped<ICriarCtaService, CriarCtaService>();
 builder.Services.AddScoped<IRenovarOfertaService, RenovarOfertaService>();
 builder.Services.AddScoped<IAdicionarImagemOfertaService, AdicionarImagemOfertaService>();
 builder.Services.AddScoped<IRemoverImagemOfertaService, RemoverImagemOfertaService>();
 builder.Services.AddScoped<IAtualizarComissaoOfertaService, AtualizarComissaoOfertaService>();
 builder.Services.AddScoped<IAtualizarTituloOfertaService, AtualizarTituloOfertaService>();
-builder.Services.AddScoped<IConsultaCtasService, ConsultaCtasService>();
 builder.Services.AddScoped<IProgramarOfertaService, ProgramarOfertaService>();
 builder.Services.AddScoped<IConsultaTemplatesService, ConsultaTemplatesService>();
 builder.Services.AddScoped<IDeletarTemplateService, DeletarTemplateService>();

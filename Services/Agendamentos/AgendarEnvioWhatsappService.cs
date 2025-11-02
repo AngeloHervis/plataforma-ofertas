@@ -1,16 +1,14 @@
-﻿using plataforma.ofertas.Interfaces.Agendamentos;
-using plataforma.ofertas.Interfaces.CTAs;
+﻿using System.Text.RegularExpressions;
+using plataforma.ofertas.Extensions;
+using plataforma.ofertas.Interfaces.Agendamentos;
 using plataforma.ofertas.Interfaces.Templates;
 using plataforma.ofertas.Models;
-using System.Text.RegularExpressions;
-using plataforma.ofertas.Extensions;
 
 namespace plataforma.ofertas.Services.Agendamentos;
 
 public sealed class AgendarEnvioWhatsappService(
     ISendFlowActionsClient client,
-    ITemplateRepository templateRepository,
-    ICtaRepository ctaRepository
+    ITemplateRepository templateRepository
 ) : IAgendarEnvioWhatsappService
 {
     public async Task<bool> AgendarImagemAsync(OfertaAgendada oferta, CancellationToken ct)
@@ -29,21 +27,20 @@ public sealed class AgendarEnvioWhatsappService(
     private async Task<string> MontarCaption(OfertaAgendada oferta, CancellationToken ct)
     {
         var template = await templateRepository.ObterPorIdAsync(oferta.TemplateId, ct);
-        var cta = await ctaRepository.ObterPorIdAsync(oferta.CtaId, ct);
 
         if (template == null)
             throw new InvalidOperationException($"Template com ID {oferta.TemplateId} não encontrado");
 
-        var caption = SubstituirVariaveisTemplate(template.Conteudo, oferta, cta);
+        var caption = SubstituirVariaveisTemplate(template.Conteudo, oferta);
 
         return caption;
     }
 
-    private static string SubstituirVariaveisTemplate(string templateConteudo, OfertaAgendada oferta, Cta cta)
+    private static string SubstituirVariaveisTemplate(string templateConteudo, OfertaAgendada oferta)
     {
         var caption = templateConteudo;
 
-        caption = Regex.Replace(caption, @"\{\{cta\}\}", cta.Titulo ?? string.Empty, RegexOptions.IgnoreCase);
+        caption = Regex.Replace(caption, @"\{\{cta\}\}", oferta.Cta ?? string.Empty, RegexOptions.IgnoreCase);
         caption = Regex.Replace(caption, @"\{\{titulo\}\}", oferta.Titulo ?? string.Empty, RegexOptions.IgnoreCase);
         caption = Regex.Replace(caption, @"\{\{preco-anterior\}\}", oferta.PrecoAnterior.PadronizarPreco() ?? string.Empty, RegexOptions.IgnoreCase);
         caption = Regex.Replace(caption, @"\{\{preco-atual\}\}", oferta.PrecoAtual.PadronizarPreco() ?? string.Empty, RegexOptions.IgnoreCase);

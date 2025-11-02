@@ -12,7 +12,6 @@ public record OfertaDetalheDto
     public string ImagemUrlPrincipal { get; init; }
     public DateTime? PublicadoEm { get; init; }
     public int? PorcentagemComissao { get; init; }
-    public Guid CtaId { get; init; }
     public Guid TemplateId { get; init; }
     public string Cupom { get; init; }
     public bool TemCupom { get; init; }

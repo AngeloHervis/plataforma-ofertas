@@ -18,7 +18,7 @@ public class OfertaAgendada : BaseModel
     [Column("atualizado_em")] public DateTime? AtualizadoEm { get; set; }
     [Column("fonte")] public string Fonte { get; set; }
     [Column("porcentagem_comissao")] public int? PorcentagemComissao { get; set; }
-    [Column("cta_id")] public Guid CtaId { get; set; }
+    [Column("cta")] public string Cta { get; set; }
     [Column("template_id")] public Guid TemplateId { get; set; }
     [Column("cupom")] public string Cupom { get; set; }
     [Column("tem_cupom")] public bool TemCupom { get; set; }

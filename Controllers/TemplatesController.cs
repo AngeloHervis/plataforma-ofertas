@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using plataforma.ofertas.Dto.Constantes;
-using plataforma.ofertas.Dto.CTAs;
 using plataforma.ofertas.Dto.Templates;
 using plataforma.ofertas.Extensions;
 using plataforma.ofertas.Interfaces.Templates;
@@ -24,7 +23,7 @@ public class TemplatesController : ControllerBase
     /// <response code="500">Erro interno</response>
     [HttpGet]
     [Produces(TiposRequisicaoERetorno.JsonText)]
-    [ProducesResponseType(typeof(List<CtaDetalhesDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<TemplateDetalhesDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ObterTemplatesAtivos(
         [FromServices] IConsultaTemplatesService service,
         CancellationToken cancellationToken)

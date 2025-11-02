@@ -10,7 +10,7 @@ public class AgendarOfertaRequestDto
     public string ImagemUrl { get; set; }
     public int? PorcentagemComissao { get; set; }
     public DateTime DataHoraAgendamento { get; set; }
-    public Guid CtaId { get; set; }
+    public string Cta { get; set; }
     public Guid TemplateId { get; set; }
     public string Cupom { get; set; }
     public bool TemCupom { get; set; }

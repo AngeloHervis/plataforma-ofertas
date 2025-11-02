@@ -22,7 +22,7 @@ public class AgendarOfertaService(IOfertaAgendadaRepository repo, IAgendarEnvioW
             DataHoraEnvio = request.DataHoraAgendamento,
             Status = "pendente",
             PorcentagemComissao = request.PorcentagemComissao,
-            CtaId = request.CtaId,
+            Cta = request.Cta,
             TemplateId = request.TemplateId,
             Cupom = request.Cupom,
             TemCupom = request.TemCupom,
@@ -55,7 +55,7 @@ public class AgendarOfertaService(IOfertaAgendadaRepository repo, IAgendarEnvioW
             PorcentagemComissao = oferta.PorcentagemComissao,
             Fonte = oferta.Fonte,
             TemplateId = oferta.TemplateId,
-            CtaId = oferta.CtaId,
+            Cta = oferta.Cta,
             Cupom = oferta.Cupom,
             TemCupom = oferta.TemCupom,
             ValorComissao = oferta.PorcentagemComissao

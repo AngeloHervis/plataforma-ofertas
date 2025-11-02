@@ -21,8 +21,8 @@ public class CriarOfertaService(IOfertaRepository ofertaRepository) : ICriarOfer
             ImagensUrl = dto.ImagemUrl,
             DescontoPercentual = HelpersExtensions.CalcularPercentual(dto.PrecoAtual,  dto.PrecoAnterior),
             PorcentagemComissao = dto.PorcentagemComissao,
-            CtaId = dto.CtaId,
             TemplateId = dto.TemplateId,
+            Cta = dto.Cta,
             Cupom = dto.Cupom,
             TemCupom = dto.TemCupom,
             PublicadoEm = DateTime.UtcNow

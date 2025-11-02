@@ -8,7 +8,7 @@ public class CriarOfertaRequestDto
     public string LinkProduto { get; init; }
     public string ImagemUrl { get; init; }
     public int? PorcentagemComissao { get; init; }
-    public Guid CtaId { get; init; }
+    public string Cta { get; init; }
     public Guid TemplateId { get; init; }
     public string Cupom { get; init; }
     public bool TemCupom { get; init; }

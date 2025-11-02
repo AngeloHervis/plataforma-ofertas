@@ -24,7 +24,6 @@ public class ConsultaOfertaDetalheService(IOfertaRepository repo) : IConsultaOfe
             ImagensUrl = HelpersExtensions.ObterListaImagens(oferta.ImagensUrl, oferta),
             ImagemUrlPrincipal = oferta.ImagemUrlPrincipal,
             PublicadoEm = oferta.PublicadoEm,
-            CtaId = oferta.CtaId,
             TemplateId = oferta.TemplateId,
             Cupom = oferta.Cupom,
             TemCupom = oferta.TemCupom,

@@ -27,7 +27,7 @@ public class Oferta : BaseModel
 
     [Column("porcentagem_comissao")] public int? PorcentagemComissao { get; set; }
     
-    [Column("cta_id")] public Guid CtaId { get; set; }
+    [Column("cta")] public string Cta { get; set; }
     
     [Column("template_id")] public Guid TemplateId { get; set; }
     
