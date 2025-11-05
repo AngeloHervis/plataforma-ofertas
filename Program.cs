@@ -91,6 +91,14 @@ builder.Services.AddHttpClient<ISendFlowActionsClient, SendFlowActionsClient>((s
     })
     .SetHandlerLifetime(TimeSpan.FromMinutes(10));
 
+builder.Services.AddHttpClient<INovaPlataformaClient, NovaPlataformaClient>((sp, http) =>
+    {
+        var opts = sp.GetRequiredService<IOptions<NovaPlataformaOptions>>().Value;
+        http.BaseAddress = new Uri(opts.BaseUrl.TrimEnd('/') + "/");
+        http.DefaultRequestHeaders.Add("X-Api-Key", opts.ApiKey);
+    })
+    .SetHandlerLifetime(TimeSpan.FromMinutes(10));
+
 // Services
 builder.Services.AddScoped<IAmazonScraperService, AmazonScraperService>();
 builder.Services.AddScoped<IShopeeScraperService, ShopeeScraperService>();
@@ -117,7 +125,6 @@ builder.Services.AddScoped<IDeletarTemplateService, DeletarTemplateService>();
 builder.Services.AddScoped<ICriarTemplateService, CriarTemplateService>();
 builder.Services.AddHttpClient<IPelandoScraperService, PelandoScraperService>();
 builder.Services.AddHttpClient<IPromobitScraperService, PromobitScraperService>();
-
 
 builder.Services.AddLogging(logging =>
 {

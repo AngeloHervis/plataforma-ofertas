@@ -22,4 +22,8 @@ public class OfertaAgendada : BaseModel
     [Column("template_id")] public Guid TemplateId { get; set; }
     [Column("cupom")] public string Cupom { get; set; }
     [Column("tem_cupom")] public bool TemCupom { get; set; }
+    [Column("imagem_url_whatsapp")] public string ImagemUrlWhatsapp { get; set; }
+    [Column("imagem_url_site")] public string ImagemUrlSite { get; set; }
+    [Column("descricao")] public string Descricao { get; set; }
+
 }

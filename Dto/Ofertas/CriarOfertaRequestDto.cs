@@ -6,7 +6,9 @@ public class CriarOfertaRequestDto
     public string PrecoAtual { get; init; }
     public string PrecoAnterior { get; init; }
     public string LinkProduto { get; init; }
-    public string ImagemUrl { get; init; }
+    public string ImagemUrlSite { get; init; }
+    public string ImagemUrlWhatsapp { get; init; }
+    public string Descricao { get; init; }
     public int? PorcentagemComissao { get; init; }
     public string Cta { get; init; }
     public Guid TemplateId { get; init; }

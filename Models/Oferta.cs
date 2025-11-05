@@ -7,31 +7,21 @@ namespace plataforma.ofertas.Models;
 public class Oferta : BaseModel
 {
     [PrimaryKey("id")] public Guid Id { get; set; }
-
     [Column("fonte")] public string Fonte { get; set; }
-
     [Column("titulo")] public string Titulo { get; set; }
-
     [Column("preco_atual")] public string PrecoAtual { get; set; }
-
     [Column("preco_anterior")] public string PrecoAnterior { get; set; }
-
     [Column("desconto_percentual")] public int? DescontoPercentual { get; set; }
-
     [Column("link")] public string Link { get; set; } = string.Empty;
-
     [Column("imagens_url")] public string ImagensUrl { get; set; }
     [Column("imagem_url_principal")] public string ImagemUrlPrincipal { get; set; }
-
     [Column("publicado_em")] public DateTime PublicadoEm { get; set; } = DateTime.UtcNow;
-
     [Column("porcentagem_comissao")] public int? PorcentagemComissao { get; set; }
-    
     [Column("cta")] public string Cta { get; set; }
-    
     [Column("template_id")] public Guid TemplateId { get; set; }
-    
     [Column("cupom")] public string Cupom { get; set; }
-    
     [Column("tem_cupom")] public bool TemCupom { get; set; }
+    [Column("imagem_url_whatsapp")] public string ImagemUrlWhatsapp { get; set; }
+    [Column("imagem_url_site")] public string ImagemUrlSite { get; set; }
+    [Column("descricao")] public string Descricao { get; set; }
 }

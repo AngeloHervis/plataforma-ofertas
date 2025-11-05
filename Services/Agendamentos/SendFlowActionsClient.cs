@@ -22,7 +22,7 @@ public sealed class SendFlowActionsClient(HttpClient http, IOptions<SendFlowOpti
             url = imageUrl,
             scheduledTo = scheduledAtUtc.ToUniversalTime().ToString("o"), 
             chooseSpecificGroups = true,
-            groupIds = ["120363421367311919"],
+            groupIds = ["120363404829692368"],
             options = new { shippingSpeed = _opts.DefaultShipping }
         };
 
