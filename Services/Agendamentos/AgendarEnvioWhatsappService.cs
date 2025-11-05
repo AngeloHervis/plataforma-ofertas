@@ -41,7 +41,7 @@ public sealed class AgendarEnvioWhatsappService(
         };
 
         var idOferta = await novaPlataformaClient.EnviarOfertaAsync(integrarDto, ct);
-        const string baseUrl = "https://beloto-ofertas.vercel.app/oferta/";
+        const string baseUrl = "https://belotopromocoes.com.br/oferta/";
         oferta.Link = $"{baseUrl}{idOferta}";
         return oferta.Link;
     }
