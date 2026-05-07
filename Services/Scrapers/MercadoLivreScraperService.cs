@@ -220,7 +220,7 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
             RegexOptions.IgnoreCase);
         if (!m.Success) return null;
 
-        var inteiro = m.Groups[1].Value.Replace(".", ""); // Remove pontos (separadores de milhares)
+        var inteiro = m.Groups[1].Value.Replace(".", "");
         var cents = m.Groups[2].Success ? m.Groups[2].Value.PadLeft(2, '0') : "00";
 
         if (decimal.TryParse($"{inteiro}.{cents}", NumberStyles.Float, CultureInfo.InvariantCulture, out var valor))
@@ -269,21 +269,17 @@ public class MercadoLivreScraperService(HttpClient httpClient) : IMercadoLivreSc
 
     private static string BuildDedupKey(string href, string tituloFallback)
     {
-        // 1) Se extrair o ID (ex.: MLB123456789), use-o — independe de params.
         var id = ExtractMercadoLivreId(href);
         if (!string.IsNullOrEmpty(id)) return $"ID:{id}";
 
-        // 2) Senão, dedup por URL normalizada (sem utm/matt/from/sid/attributes etc.)
         var norm = NormalizeMercadoLivreLink(href);
         if (!string.IsNullOrEmpty(norm)) return $"URL:{norm}";
 
-        // 3) Fallback: título "slugado" (melhor que nada)
         return "TTL:" + Slugify(LimparTexto(tituloFallback));
     }
 
     private static string ExtractMercadoLivreId(string href)
     {
-        // cobre MLB-123456789, MLB123456789, etc.
         var m = Regex.Match(href ?? "", @"\b(ML[A-Z]{1}\-?\d{6,})\b", RegexOptions.IgnoreCase);
         if (m.Success) return m.Groups[1].Value.Replace("-", "").ToUpperInvariant();
         return null;
