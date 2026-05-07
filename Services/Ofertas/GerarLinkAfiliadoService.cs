@@ -43,57 +43,7 @@ public class GerarLinkAfiliadoService(
 
             logger.LogWarning("Falha ao cadastrar oferta da Amazon.");
         }
-
-        //     if (request.TipoLink == "shopee")
-        //     {
-        //         logger.LogInformation("Processando link da Shopee: {Link}", request.Link);
-        //         var oferta = await shopeeScraperService.ObterInformacoesCompletasDaShopeeAsync(request.Link, ct);
-        //         
-        //         var dto = new OfertaDetalheDto
-        //         {
-        //             Fonte = Fonte,
-        //             Titulo = oferta.Titulo,
-        //             PrecoAtual = oferta.PrecoAtual,
-        //             PrecoAnterior = oferta.PrecoAnterior,
-        //             Link = oferta.Link,
-        //             ImagemUrl = oferta.ImagemUrl
-        //         };
-        //         
-        //         var id = await CadastrarOfertaNoBanco(oferta, ct);
-        //         if (id != Guid.Empty)
-        //         {
-        //             logger.LogInformation("Oferta da Shopee cadastrada com sucesso. Id: {Id}", id);
-        //             dto.Id = id;
-        //             return dto;
-        //         }
-        //
-        //         logger.LogWarning("Falha ao cadastrar oferta da Shopee.");
-        //     }
-        //
-        //     if (request.TipoLink == "mercado-livre")
-        //     {
-        //         logger.LogInformation("Processando link do Mercado Livre: {Link}", request.Link);
-        //         var oferta = await mercadoLivreScraperService.ObterInformacoesCompletasMercadoLivreAsync(request.Link, ct);
-        //         var dto = new OfertaDetalheDto
-        //         {
-        //             Fonte = Fonte,
-        //             Titulo = oferta.Titulo,
-        //             PrecoAtual = oferta.PrecoAtual,
-        //             PrecoAnterior = oferta.PrecoAnterior,
-        //             Link = oferta.Link,
-        //             ImagemUrl = oferta.ImagemUrl
-        //         };
-        //         var id = await CadastrarOfertaNoBanco(dto, ct);
-        //         if (id != Guid.Empty)
-        //         {
-        //             logger.LogInformation("Oferta do Mercado Livre cadastrada com sucesso. Id: {Id}", id);
-        //             dto.Id = id;
-        //             return dto;
-        //         }
-        //
-        //         logger.LogWarning("Falha ao cadastrar oferta do Mercado Livre.");
-        //     }
-        //
+        
         logger.LogWarning("Tipo de link não reconhecido ou falha ao gerar oferta.");
         return null;
     }
